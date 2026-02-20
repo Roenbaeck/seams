@@ -25,6 +25,91 @@ PLOT_EXAMPLE = True
 SAMPLE_SOURCES = 12
 SAMPLE_TARGETS_PER_SOURCE = 12
 
+
+def _objective_and_derivatives(
+    N: int,
+    u: np.ndarray,
+    v: np.ndarray,
+    alpha: np.ndarray,
+    w_star: np.ndarray,
+    X: np.ndarray,
+):
+    """Objective and its derivatives for
+
+        f(X) = 1/2 * sum_e ( alpha_e * (X_u + X_v) - w*_e )^2
+
+    Returns:
+        f: scalar
+        g: (N,) gradient
+        H: (N,N) sparse Hessian (constant in X)
+    """
+    E = len(u)
+    if len(v) != E or len(alpha) != E or len(w_star) != E:
+        raise ValueError("Edge arrays must have consistent length")
+
+    r = alpha * (X[u] + X[v]) - w_star
+    f = 0.5 * float(np.dot(r, r))
+
+    # g = A^T r where A[e,u]=alpha_e, A[e,v]=alpha_e
+    g = np.bincount(u, weights=alpha * r, minlength=N) + np.bincount(v, weights=alpha * r, minlength=N)
+
+    # H = A^T A
+    alpha_sq = alpha**2
+    I = np.concatenate([u, v])
+    J = np.concatenate([v, u])
+    V_off = np.concatenate([alpha_sq, alpha_sq])
+    H_off = sp.coo_matrix((V_off, (I, J)), shape=(N, N))
+    H_diag_vals = np.bincount(u, weights=alpha_sq, minlength=N) + np.bincount(v, weights=alpha_sq, minlength=N)
+    H = (H_off + sp.diags(H_diag_vals)).tocsr()
+
+    return f, g, H
+
+
+def derivative_check(points: np.ndarray, edges: np.ndarray, w_star: np.ndarray, seed: int = 123):
+    """Finite-difference check of gradient (Jacobian) and Hessian formulas.
+
+    This validates that the analytic gradient matches finite differences of f,
+    and that the Hessian action matches finite differences of the gradient.
+    """
+    rng = np.random.default_rng(seed)
+    N = len(points)
+    u = edges[:, 0].astype(np.int64)
+    v = edges[:, 1].astype(np.int64)
+    l0 = np.linalg.norm(points[u] - points[v], axis=1)
+    alpha = l0 / 2.0
+
+    # Use a strictly positive random test point.
+    X0 = np.exp(0.1 * rng.standard_normal(N))
+    p = rng.standard_normal(N)
+    p /= (np.linalg.norm(p) + 1e-12)
+
+    f0, g0, H = _objective_and_derivatives(N, u, v, alpha, w_star, X0)
+    Hp = H @ p
+
+    # Directional derivative check: (f(x+eps p) - f(x-eps p)) / (2eps) ≈ g(x)·p
+    eps = 1e-6
+    f_plus, _, _ = _objective_and_derivatives(N, u, v, alpha, w_star, X0 + eps * p)
+    f_minus, _, _ = _objective_and_derivatives(N, u, v, alpha, w_star, X0 - eps * p)
+    fd_dir = (f_plus - f_minus) / (2.0 * eps)
+    an_dir = float(np.dot(g0, p))
+    dir_abs_err = float(abs(fd_dir - an_dir))
+    dir_rel_err = float(dir_abs_err / (abs(fd_dir) + abs(an_dir) + 1e-12))
+
+    # Hessian-vector check via gradient difference: (g(x+eps p)-g(x-eps p))/(2eps) ≈ H p
+    _, g_plus, _ = _objective_and_derivatives(N, u, v, alpha, w_star, X0 + eps * p)
+    _, g_minus, _ = _objective_and_derivatives(N, u, v, alpha, w_star, X0 - eps * p)
+    fd_Hp = (g_plus - g_minus) / (2.0 * eps)
+    hv_abs_err = float(np.linalg.norm(fd_Hp - Hp))
+    hv_rel_err = float(hv_abs_err / (np.linalg.norm(fd_Hp) + np.linalg.norm(Hp) + 1e-12))
+
+    return {
+        "f0": float(f0),
+        "dir_abs_err": dir_abs_err,
+        "dir_rel_err": dir_rel_err,
+        "hv_abs_err": hv_abs_err,
+        "hv_rel_err": hv_rel_err,
+    }
+
 def generate_mesh(n_points: int, rng: np.random.Generator):
     """Generates a random 2D triangulated mesh (non-bipartite graph)."""
     # Generate random points in the unit square
@@ -245,6 +330,7 @@ def main():
             "d_path_mean  d_path_p95  corr  a_fit  b_fit  R2"
         )
         results = []
+        deriv_checks = []
 
         example_payload = None
         example_key = (800, 0.15)
@@ -253,6 +339,8 @@ def main():
             for sigma in sigma_grid:
                 points, edges, s_gt, s_opt, w_gt, w_star, w_opt, m = run_experiment(n_points=n, sigma=sigma, seed=42)
                 results.append(m)
+                chk = derivative_check(points, edges, w_star, seed=123)
+                deriv_checks.append({"n": n, "sigma": float(sigma), **chk})
                 print(
                     f"{m['n_points']:4d} {m['n_edges']:5d} {m['sigma']:5.2f} "
                     f"{m['mean_l0']:.4f} {m['max_l0']:.4f} "
@@ -264,6 +352,21 @@ def main():
                 )
                 if (n, float(sigma)) == example_key:
                     example_payload = (points, edges, s_gt, s_opt, m)
+
+        if deriv_checks:
+            worst_dir = max(deriv_checks, key=lambda d: d.get("dir_rel_err", float("-inf")))
+            worst_hv = max(deriv_checks, key=lambda d: d.get("hv_rel_err", float("-inf")))
+            print("\n--- Derivative Check (finite differences; worst over sweep) ---")
+            print(
+                "Directional deriv rel err : "
+                f"{worst_dir['dir_rel_err']:.3e} (abs {worst_dir['dir_abs_err']:.3e}) "
+                f"at (n={worst_dir['n']}, sigma={worst_dir['sigma']:.2f})"
+            )
+            print(
+                "Hessian-vector rel err    : "
+                f"{worst_hv['hv_rel_err']:.3e} (abs {worst_hv['hv_abs_err']:.3e}) "
+                f"at (n={worst_hv['n']}, sigma={worst_hv['sigma']:.2f})"
+            )
 
         # Optional single representative plot
         if PLOT_EXAMPLE and example_payload is not None:
@@ -295,7 +398,7 @@ def main():
             plt.show()
     else:
         # Single-run mode (kept for convenience)
-        points, edges, s_gt, s_opt, _w_gt, _w_star, _w_opt, m = run_experiment(n_points=800, sigma=0.15, seed=42)
+        points, edges, s_gt, s_opt, _w_gt, w_star, _w_opt, m = run_experiment(n_points=800, sigma=0.15, seed=42)
         print("--- Seam-Driven Geometry Validation (single) ---")
         print(f"Mesh generated: {m['n_points']} vertices, {m['n_edges']} edges.")
         print(f"Added {m['sigma']*100:.1f}% Gaussian noise to ground-truth metric.")
@@ -309,6 +412,11 @@ def main():
         print(f"Pearson corr(s_gt, s_opt) : {m['pearson_r']:.4f}")
         print(f"Affine fit: s_opt ≈ a*s_gt + b (a, b) : ({m['a_fit']:.4f}, {m['b_fit']:.4f})")
         print(f"Affine fit R^2 : {m['r2_fit']:.4f}")
+
+        chk = derivative_check(points, edges, w_star, seed=123)
+        print("\n--- Derivative Check (finite differences) ---")
+        print(f"Directional deriv rel err : {chk['dir_rel_err']:.3e} (abs {chk['dir_abs_err']:.3e})")
+        print(f"Hessian-vector rel err    : {chk['hv_rel_err']:.3e} (abs {chk['hv_abs_err']:.3e})")
 
         if PLOT_EXAMPLE:
             fig, axes = plt.subplots(1, 3, figsize=(15, 5))
