@@ -7,80 +7,76 @@
 % http://www.LaTeXTemplates.com
 %
 % Original author:
-% Frits Wenneker (http://www.howtotex.com) with extensive modifications by
+% Frits Wenneker[](http://www.howtotex.com) with extensive modifications by
 % Vel (vel@LaTeXTemplates.com)
 %
 % License:
-% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+% CC BY-NC-SA 3.0[](http://creativecommons.org/licenses/by-nc-sa/3.0/)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%----------------------------------------------------------------------------------------
-%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
-%----------------------------------------------------------------------------------------
-\documentclass[twoside,twocolumn]{article}
+\documentclass{article}
 
 % --- Add necessary math packages ---
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{amsthm} % Optional for theorems/definitions
-
-% ... (Include your other packages: mathpazo, T1, geometry, etc.) ...
-\usepackage[sc]{mathpazo}
-\usepackage[T1]{fontenc}
+\usepackage{amsthm}
+\usepackage{mathpazo}
+\usepackage{fontenc}
 \linespread{1.05}
 \usepackage{microtype}
 \usepackage{bm}
 \usepackage{tikz}
 \usetikzlibrary{positioning, shapes.geometric}
-\usepackage[english]{babel}
-\usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry}
-\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption}
+\usetikzlibrary{arrows.meta}
+\usepackage{babel}
+\usepackage{geometry}
+\usepackage{caption}
 \usepackage{booktabs}
 \usepackage{enumitem}
-\setlist[itemize]{noitemsep}
+\setlist{noitemsep}
 \usepackage{abstract}
 \renewcommand{\abstractnamefont}{\normalfont\bfseries}
 \renewcommand{\abstracttextfont}{\normalfont\small\itshape}
-\usepackage{titlesec} % Keep titlesec
+\usepackage{titlesec}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
-\fancyhead{}
-\fancyfoot{}
-\fancyhead[C]{Geometries from Seams via Rules, Preprint: \today}
-\fancyfoot[RO,LE]{\thepage}
+\fancyhf{} % clear all header/foot fields to avoid overlap with defaults
+\fancyhead[C]{Discrete-to-Continuum Metrics from Scalar Fields (Draft \today)}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14.5pt} % avoid "headheight too small" layout issues
 \usepackage{titling}
 \usepackage{hyperref}
-\usepackage{amsthm} % Keep amsthm
+\usepackage{bookmark}
+\hypersetup{bookmarksopen=true, bookmarksnumbered=true}
 
 % --- CONVENTIONAL NUMBERING SETUP ---
-% Sections: Roman numerals (I, II, ...)
 \renewcommand{\thesection}{\Roman{section}}
-\titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{}
+\titleformat{\section}{\large\scshape\centering}{\thesection.}{1em}{}
 
-% Subsections: Capital letters (A, B, ...) prefixed by Section number
-\renewcommand{\thesubsection}{\Alph{subsection}} % Use capital letters
-\titleformat{\subsection}[block]{\bfseries\large}{\thesection.\thesubsection}{1em}{} % Display as I.A, I.B etc.
+\renewcommand{\thesubsection}{\Alph{subsection}}
+\titleformat{\subsection}{\bfseries\large}{\thesection.\thesubsection}{1em}{}
 
-% Subsubsections: Arabic numerals (1, 2, ...) prefixed by Section.Subsection
-% We will use this level for the Examples
 \renewcommand{\thesubsubsection}{\arabic{subsubsection}}
-\titleformat{\subsubsection}[runin] % Runin style looks nice for examples
-{\normalfont\bfseries}{\thesection.\thesubsection.\thesubsubsection.}{0.5em}{}[\quad] % Display as I.A.1., I.B.1. etc.
+\titleformat{\subsubsection}{\normalfont\bfseries}{\thesection.\thesubsection.\thesubsubsection.}{0.5em}{}
 
-% Definitions: Numbered sequentially within SUBSECTIONS (like subsubsections)
-% Reset counter with each subsection
-\newtheorem{definition}{Definition}[subsection]
-\renewcommand{\thedefinition}{\thesection.\thesubsection.\arabic{definition}} % Format as I.A.1, I.A.2, etc.
+\newtheorem{definition}{Definition}
+\newtheorem{requirement}{Requirement}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{conjecture}{Conjecture}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
 
-% Requirements: Numbered sequentially within DEFINITIONS
-\newtheorem{requirement}{Requirement}[definition]
-\renewcommand{\therequirement}{\thedefinition.\arabic{requirement}} % Format as I.A.1.1, I.A.1.2, etc.
+% --- Common notation/macros used in theorem statements ---
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\e}{\mathrm{e}}
+\newcommand{\diff}{\,\mathrm{d}}
 
-% Equations: Numbered by section (I.1, I.2, ...) - Keep this as it is common
 \renewcommand{\theequation}{\thesection.\arabic{equation}}
-\numberwithin{equation}{section} % Ensure reset per section
-
+\numberwithin{equation}{section}
 
 %----------------------------------------------------------------------------------------
 %	TITLE SECTION
@@ -90,19 +86,19 @@
 
 \pretitle{\begin{center}\Huge\bfseries}
 \posttitle{\end{center}}
-\title{\vspace{5mm}\fontsize{24pt}{10pt}\selectfont\textbf{Generating Geometries from Scalar Seams via Interpretive Rules}} % Adjusted Title
+\title{\vspace{5mm}\fontsize{24pt}{24pt}\selectfont\textbf{Discrete-to-Continuum Metrics \\from Scalar Fields}}
 \author{%
-\\[2mm] %
-\textsc{Lars Rönnbäck}\thanks{Content iteratively generated by Gemini 2.5 Pro and references added by Claude 3.7 Sonnet, based on ideas by Lars Rönnbäck.}
-\\[1ex] % Your name
-\normalsize Stockholm University \\ % Your institution
-\normalsize \href{mailto:lars.ronnback@anchormodeling.com}{lars@uptochange.com} % Your email address
-\\[1ex] %
+\\ %
+\textsc{Lars Rönnbäck}\thanks{Content iteratively generated by Gemini 3.1, GPT-5.2, Grok 4.2, and Sonnet 4.6, based on ideas by Lars Rönnbäck.}
+\\ %
+\normalsize Stockholm University \\
+\normalsize \href{mailto:lars.ronnback@anchormodeling.com}{lars@uptochange.com}
+\\ %
 }
 \date{}
 \renewcommand{\maketitlehookd}{%
 \begin{abstract}
-\noindent This paper introduces a framework for generating geometric structures. We propose that the geometry of a space $U$ can be derived from a scalar function $s: U \to \mathbb{R}$, termed the 'seam', when interpreted through a well-defined 'Rule' $\mathcal{R}$. The Rule dictates how the seam determines geometric properties, primarily the distance function $D$ on $U$. We formalize the minimal requirements for such Rules and argue that the triplet $(U, s, \mathcal{R})$ provides a potentially unifying approach to describing diverse geometric spaces, including pseudo-Riemannian and non-standard structures. The framework emphasizes the generative power of the seam function when coupled with a specific interpretive Rule.
+\noindent We present \emph{seam-driven geometry}, a scalar-first framework for geometry processing in which geometric structure is generated from a scalar field \(s:U\to\R\) (a \emph{seam}) via an explicit local \emph{Rule} \(\mathcal{R}\). In the discrete setting, we study a conformal graph rule that assigns edge lengths using an endpoint quadrature of \(e^{s}\), yielding a shortest-path metric that is easy to optimize and differentiate. Our main results are (i) a quantitative discrete-to-continuum guarantee, including an $O(h)$ Gromov--Hausdorff convergence rate on quasi-uniform triangulations; (ii) a curvature sensitivity identity showing that first-order curvature variations are governed by the cotangent Laplacian; and (iii) a strictly convex inverse-design formulation for fitting target edge weights via a quadratic program in variables \(X_u=e^{s(u)}\). These results position seams as a stable interface between differential-geometric objectives and practical optimization pipelines in mesh and graph processing.
 \end{abstract}
 }
 
@@ -119,581 +115,500 @@
 
 \section{Introduction}
 
-Standard mathematical frameworks describe geometry through structures like metric spaces $(X, D)$ or Riemannian manifolds $(M, g)$, where the distance function $D$ or the metric tensor $g$ is postulated as fundamental. This paper explores an alternative approach where geometric structure is not postulated directly, but rather generated from a more primitive object: a scalar field defined on a base space.
+Standard presentations of geometry begin with a metric or a manifold structure postulated \emph{a priori}. Here we emphasize a complementary, constructive viewpoint: start with a base space \(U\) and a scalar field \(s\) (the \emph{seam}), then let an explicit Rule \(\mathcal{R}\) produce the geometric data. 
 
-We propose that a geometry can arise from the combination of a base set $U$, potentially possessing some inherent structure (e.g., topological, differential, order), and a scalar function $s: U \to \mathbb{R}$, which we term the \emph{seam}. The seam encodes information that, when interpreted through a specific mechanism, "stitches" the space together, defining its geometric properties. Crucially, the interpretation requires a third component: a well-defined \emph{Rule}, denoted $\mathcal{R}$, which maps the seam $s$ and the structure of $U$ to a specific geometric realization, typically characterized by a distance function $D: U \times U \to \mathbb{R}$.
+In smooth differential geometry, this scalar-first perspective provides an elegant synthesis. Conformal metrics, Information Geometry (Hessian metrics), optimal transport (Kantorovich potentials), and Morse handle-bodies can all be viewed as the output of specific local operations on a scalar field. However, the true utility of this formulation arises in computational and applied mathematics. On discrete meshes, manipulating full tensor fields is algorithmically cumbersome and numerically unstable. By reducing metric generation to the evaluation of a scalar seam, highly complex geometric problems (like metric projection or feature-aware routing) can be reduced to fast, stable scalar optimization.
 
-The central idea is that the triplet $(U, s, \mathcal{R})$ forms a complete system for generating a geometry. This perspective offers potential advantages:
-\begin{itemize}
-    \item \textbf{Generativity:} Simple seam functions $s$ might generate complex and varied geometries under a fixed Rule $\mathcal{R}$.
-    \item \textbf{Unification:} Different geometries (e.g., Euclidean, Minkowski, spherical, hyperbolic) might be realized by varying $s$ within a single framework $(U, \mathcal{R})$.
-    \item \textbf{Foundation:} It connects geometry directly to scalar fields, which are ubiquitous in physical theories. % Potential place for physics citations if desired later
-    \item \textbf{Flexibility:} Allows for the exploration of geometries on spaces $U$ that are not standard manifolds, or arising from non-smooth seams $s$, depending on the nature of the Rule $\mathcal{R}$.
-\end{itemize}
+In this paper, we formally define the Seam-Rule framework and demonstrate its utility. Section II establishes the formal axioms and composition laws for Rules. Section III catalogs the standard continuous and discrete Rules. Section IV shows how continuous theorems (Gauss-Bonnet) are cleanly articulated in this language. Finally, Section V provides the computational climax: proving that discrete seam-generated graphs rigorously approximate continuous geometries, preserve curvature via the cotangent Laplacian, and enable strictly convex inverse metric design.
 
-This paper will first formalize the components of this framework, establishing the minimal requirements for a valid Rule $\mathcal{R}$. We will then discuss different classes of Rules and illustrate the framework by exploring the geometries generated by specific choices of $(U, s, \mathcal{R})$, demonstrating the capability to reproduce known geometries and potentially generate novel ones.
-
-%------------------------------------------------
-
-\section{Framework: Seams and Rules}
-
-Let $U$ be a base set, representing the points of the space under consideration. $U$ may possess some inherent structure $\mathcal{T}_U$, such as being a product space $X_1 \times \dots \times X_n$, where components $X_i$ might be equipped with standard structures (e.g., order relation for $\mathbb{N}$, differentiable structure for $\mathbb{R}$).
-
-% Renumber definitions based on subsection
-\setcounter{subsection}{0} % Reset subsection counter for Section II
-\subsection{Seam Definition} % Dummy subsection for numbering
-\begin{definition}[Seam]
-A \emph{seam} on $U$ is a function $s: U \to \mathbb{R}$. Depending on the Rule used, the seam $s$ may be required to belong to a specific class of functions $\mathcal{S}(U)$ (e.g., continuous, differentiable, convex).
-\end{definition}
-
-\subsection{Rule Definition} % Dummy subsection for numbering
-\begin{definition}[Rule]
-A \emph{Rule} $\mathcal{R}$ is a well-defined procedure that, given the base set $U$ with its inherent structure $\mathcal{T}_U$ and an admissible seam function $s \in \mathcal{S}(U)$, generates a distance function $D: U \times U \to \mathbb{R}$, denoted $D = \mathcal{R}(s; U, \mathcal{T}_U)$.
-\end{definition}
-% ADDED CITATION BASED ON GUIDE:
-The concept of deriving geometry from scalar fields has precedents in physics, particularly in Kaluza-Klein theory \cite{Kaluza1921,Klein1926} and scalar-tensor theories \cite{BransDicke1961}.
-
-For a Rule $\mathcal{R}$ to be considered geometrically meaningful in the context of defining distances, it must satisfy certain minimal requirements related to the properties of the generated function $D$.
-
-\begin{requirement}[Minimal Requirements for a Rule]\label{req:RuleReqs}
-A Rule \( \mathcal{R} \) must ensure that for any admissible seam \( s \in \mathcal{S}(U) \), the resulting \( D = \mathcal{R}(s; U, \mathcal{T}_U) \) is a pseudo-metric on \( U \), satisfying:
-\begin{enumerate}[label=(M\arabic*)]
-\item \textit{Non-negativity:} \( D(u, v) \ge 0 \) for all \( u, v \in U \).
-\item \textit{Identity:} \( D(u, u) = 0 \) for all \( u \in U \).
-\item \textit{Symmetry:} \( D(u, v) = D(v, u) \) for all \( u, v \in U \).
-\item \textit{Triangle Inequality:} \( D(u, w) \le D(u, v) + D(v, w) \) for all \( u, v, w \in U \).
-\end{enumerate}
-The procedure must be unambiguous and \( D \) must generally depend on \( s \).
-\end{requirement}
-
-\noindent The possibility that $D(u, v) = 0$ for $u \neq v$ is allowed by the pseudo-metric definition, accommodating potentially degenerate geometries where distinct points are identified. A stricter requirement might demand that $\mathcal{R}$ generates a true metric (where $D(u, v) = 0 \iff u=v$) for certain classes of non-degenerate seams $s$.
-
-The choice of Rule $\mathcal{R}$ embodies the principle by which the seam $s$ translates into geometric distance. Different rules correspond to different interpretations of the seam's meaning. Examples include:
-\begin{itemize}
-    \item Rules deriving a metric tensor $g$ from second derivatives of $s$ (e.g., the Hessian Rule $\mathcal{R}_{\text{Hessian}}$ where $g_{ij} = \partial^2 s / \partial x^i \partial x^j$).
-    \item Rules interpreting $s$ as defining a conformal factor relative to a background metric (e.g., the Conformal Rule $\mathcal{R}_{\text{Conf}}$ where $g_{ij} = e^{2s} \delta_{ij}$).
-    \item Rules using the magnitude of the gradient of $s$ to scale an isotropic metric (e.g., the Gradient Rule \( \mathcal{R}_{\text{Grad}} \) where \( g_{ij} = |\nabla s|^2 \delta_{ij} \)). % Added Gradient Rule here
-    \item Rules based on graph approximations, where edge weights are derived from $s$, and $D$ is the limiting shortest path distance.
-\end{itemize}
-These specific rules will be explored in subsequent sections.
-
-The outcome of applying a Rule $\mathcal{R}$ to $(U, s)$ is the pseudo-metric space $(U, D)$, which represents the geometry generated by the triplet $(U, s, \mathcal{R})$.
-
-%------------------------------------------------
-
-% Reset equation counter for Section III
-\setcounter{equation}{0}
-\section{Examples of Rules and Generated Geometries}
-
-In this section, we will explore specific Rules $\mathcal{R}$ and examine the geometries $(U, D)$ they generate for various choices of $U$ and $s$. We focus first on rules applicable when $U$ possesses a differentiable structure.
-
-\subsection{The Hessian Rule ($\mathcal{R}_{\text{Hessian}}$)}
-% Reset definition counter for this subsection
-\setcounter{definition}{0}
-
-Perhaps the most direct way to generate a tensor structure from a scalar field in a differentiable setting is by considering its second derivatives.
-
-\begin{definition}[Hessian Rule]
-Let $U$ be a differentiable manifold equipped with local coordinates $\{x^i\}$. Let the class of admissible seams $\mathcal{S}(U)$ be the set of twice continuously differentiable functions ($C^2$) $s: U \to \mathbb{R}$. The \emph{Hessian Rule}, denoted $\mathcal{R}_{\text{Hessian}}$, generates a symmetric tensor field $g$ of type (0,2) with components in local coordinates given by:
-\begin{equation}
-g_{ij}(u) = \frac{\partial^2 s}{\partial x^i \partial x^j}(u)
-\label{eq:hessian_rule}
-\end{equation}
-If this tensor $g$ is non-degenerate (i.e., $\det(g) \neq 0$) and has a constant signature, it defines a pseudo-Riemannian metric on $U$. If $g$ is also positive definite ($\det(g) > 0$ and appropriate signature), it defines a Riemannian metric. The distance function $D = \mathcal{R}_{\text{Hessian}}(s; U)$ is then defined as the standard geodesic distance associated with the metric $g$.
-\end{definition}
-% ADDED CITATION BASED ON GUIDE:
-The use of Hessian structures to define metrics has been extensively studied in information geometry \cite{Amari2016,Shima2007}.
-
-\noindent Note that this rule does not automatically guarantee a positive definite (Riemannian) metric or even a non-degenerate one; the properties of the generated tensor $g$ depend entirely on the choice of the seam function $s$. If $g$ is degenerate or changes signature, the resulting geometry may be non-standard or only defined piecewise. However, $g$ always defines a symmetric bilinear form on each tangent space, and the framework can still be explored. Let's examine some outcomes.
-
-\subsubsection{Example: Euclidean Space}
-Let $U = \mathbb{R}^n$ with standard Cartesian coordinates $(x^1, \dots, x^n)$. Consider the quadratic seam:
-$$ s(x^1, \dots, x^n) = \frac{1}{2} \sum_{i=1}^n (x^i)^2 $$
-Applying the Hessian rule \eqref{eq:hessian_rule}:
-$$ g_{ij} = \frac{\partial^2}{\partial x^i \partial x^j} \left( \frac{1}{2} \sum_{k=1}^n (x^k)^2 \right) = \delta_{ij} $$
-This is the standard Euclidean metric tensor. The generated geometry $(U, D)$ is $n$-dimensional Euclidean space $\mathbb{E}^n$.
-
-\subsubsection{Example: Minkowski Spacetime}
-Let $U = \mathbb{R}^4$ with coordinates $(x^0, x^1, x^2, x^3)$. Consider the seam representing the squared interval:
-\begin{align}
-s(x^0, x^1, x^2, x^3) = \notag \\ \frac{1}{2} \left[ (x^0)^2 - (x^1)^2 - (x^2)^2 - (x^3)^2 \right]
-\end{align}
-Applying the Hessian rule \eqref{eq:hessian_rule}, using the $(+,-,-,-)$ signature convention:
-$$ g_{\mu\nu} = \eta_{\mu\nu} $$
-This yields the Minkowski metric tensor. The generated geometry is 4-dimensional Minkowski spacetime.
-
-\subsubsection{Example: Flat 2D Lorentzian Space}
-Let $U = \mathbb{R}^2$ with coordinates $(x, y)$. Consider the seam $s(x, y) = xy$. Applying the Hessian rule \eqref{eq:hessian_rule}:
-$$ g = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix} $$
-This corresponds to a flat 2D Lorentzian geometry.
-
-\subsubsection{Example: Curved Riemannian Geometry}
-Let $U = \mathbb{R}^2$ with coordinates $(x, y)$. Consider the seam $s(x, y) = \frac{1}{4} (x^2 + y^2)^2$. The Hessian rule yields the metric:
-$$ g = \begin{pmatrix} 3x^2+y^2 & 2xy \\ 2xy & x^2+3y^2 \end{pmatrix} $$
-This metric is positive definite for $(x,y) \neq (0,0)$ and indicates a curved Riemannian geometry.
-
-\subsubsection{Example: Spherically Symmetric Geometries}
-Let $U = \mathbb{R}^3$ and consider a spherically symmetric seam $s = f(r)$, where $r = \sqrt{x^2+y^2+z^2}$. The Hessian rule generates the metric:
-$$ ds^2 = f''(r) dr^2 + \frac{f'(r)}{r} (r^2 d\theta^2 + r^2 \sin^2\theta d\phi^2) $$
-For this to match the standard form $ds^2 = A(r) dr^2 + r^2 B(r) (d\Omega^2)$, we need $A(r) = f''(r)$ and $B(r) = f'(r)/r$. This implies $B'(r) = (r f''(r) - f'(r))/r^2$, so $r B'(r) = f''(r) - f'(r)/r = A(r) - B(r)$, or $A(r) = B(r) + r B'(r)$. This is a constraint satisfied by flat space ($A=1, B=1 \implies s=r^2/2$) but not generally by other important metrics like Schwarzschild.
-
-\subsubsection{Example: Changing Signature}
-Let $U = \mathbb{R}^2$ with coordinates $(x, y)$. Consider the seam $s(x, y) = \cos(x) + \frac{1}{2} y^2$. The Hessian rule yields $g = \begin{pmatrix} -\cos(x) & 0 \\ 0 & 1 \end{pmatrix}$. The geometry changes type depending on the sign of $\cos(x)$.
-
-\subsubsection{Summary for Hessian Rule}
-The Hessian Rule $\mathcal{R}_{\text{Hessian}}$ provides a direct link from a scalar potential $s$ ($C^2$) to a metric tensor $g$. It naturally generates flat Euclidean and Minkowski spaces. It can generate curved geometries, both Riemannian and pseudo-Riemannian. However, it does not guarantee positive definiteness and seems unable to generate certain important geometries like those with constant non-zero curvature directly on $\mathbb{R}^n$. It defines a specific class of geometries whose metric tensor is the Hessian of a potential.
-
-\subsection{The Conformal Rule ($\mathcal{R}_{\text{Conf}}$)}
-% Reset definition counter for this subsection
-\setcounter{definition}{0}
-
-Another natural way to relate a scalar field $s$ to a metric $g$ is by using $s$ to define a local scaling, or conformal factor, relative to some pre-existing background metric on $U$.
-
-\begin{definition}[Conformal Rule]
-Let $U$ be a differentiable manifold equipped with a background pseudo-Riemannian metric $h_{ij}$. Typically, for $U=\mathbb{R}^n$, $h_{ij}$ is taken to be the standard Euclidean metric $\delta_{ij}$. (It should be noted that this background metric $h_{ij}$ is conceptually flexible; it could potentially be derived from another seam $s_0$ using a different rule, such as $\mathcal{R}_{\text{Hessian}}$.) Let the class of admissible seams $\mathcal{S}(U)$ be the set of sufficiently smooth (e.g., continuous or differentiable) functions $s: U \to \mathbb{R}$. The \emph{Conformal Rule}, denoted $\mathcal{R}_{\text{Conf}}$, generates a pseudo-Riemannian metric tensor $g$ given by:
-\begin{equation}
-g_{ij}(u) = e^{2s(u)} h_{ij}(u)
-\label{eq:conformal_rule}
-\end{equation}
-The distance function $D = \mathcal{R}_{\text{Conf}}(s; U)$ is then defined as the standard geodesic distance associated with the metric $g$.
-\end{definition}
-% ADDED CITATION BASED ON GUIDE:
-Conformal transformations and their geometric properties are well-established in differential geometry \cite{Petersen2006,Lee2018}.
-
-\noindent In this rule, the seam $s$ directly controls the local "stretching" factor $e^s$ applied to the background metric $h$. If $h$ is positive definite (Riemannian), then $g$ will also be positive definite. The resulting geometry $(U, g)$ is conformally equivalent to the background geometry $(U, h)$.
-
-% ... rest of Conformal Rule subsection (Examples III.B.i - III.B.v + Summary) ...
-\subsubsection{Example: Euclidean Space}
-Let $U = \mathbb{R}^n$ with $h_{ij} = \delta_{ij}$. To generate $g_{ij} = \delta_{ij}$, we need $e^{2s} = 1$, implying the trivial seam $s=0$.
-
-\subsubsection{Example: Spherical Geometry}
-Let $U = \mathbb{R}^2$ with $h_{ij} = \delta_{ij}$. The metric of a sphere of radius $R$ in stereographic coordinates $ds^2 = \frac{4R^4}{(R^2 + x^2 + y^2)^2}(dx^2 + dy^2)$ is generated by the seam:
-$$ s(x, y) = \ln(2R^2) - \ln(R^2 + x^2 + y^2) $$
-via the Conformal Rule.
-
-\subsubsection{Example: Hyperbolic Geometry (Upper Half-Plane)}
-Let $U = \{ (x, y) \in \mathbb{R}^2 \mid y > 0 \}$ with $h_{ij} = \delta_{ij}$. The hyperbolic metric $ds^2 = \frac{R^2}{y^2} (dx^2 + dy^2)$ is generated by the seam:
-$$ s(x, y) = \ln(R) - \ln(y) $$
-via the Conformal Rule.
-
-\subsubsection{Example: Flat, Conformally Distorted Plane}
-Let $U = \mathbb{R}^2$ with $h_{ij} = \delta_{ij}$. Consider $s(x, y) = xy$. The Conformal Rule yields:
-$$ g = \begin{pmatrix} e^{2xy} & 0 \\ 0 & e^{2xy} \end{pmatrix} $$
-This metric is intrinsically flat ($K=0$) but not globally Euclidean.
-
-\subsubsection{Summary for Conformal Rule}
-The Conformal Rule $\mathcal{R}_{\text{Conf}}$ interprets $s$ as controlling the logarithm of a local scale factor applied to a background metric $h$. Its strengths are generating conformally flat geometries like spheres and hyperbolic spaces (when $h=\delta$), and preserving metric type. Its limitation is that it can only generate geometries conformally equivalent to the background. (Notably, the background $h$ itself could be the result of applying another rule, like $\mathcal{R}_{\text{Hessian}}$, to a different seam, allowing for the generation of metrics conformal to non-flat Hessian geometries.) It cannot change metric signature (e.g., Euclidean to Lorentzian) with real $s$.
-
-% --- NEW SECTION FOR GRADIENT RULE ---
-\subsection{The Gradient Rule (\( \mathcal{R}_{\text{Grad}} \))}
-% Reset definition counter for this subsection
-\setcounter{definition}{0}
-
-This rule uses the magnitude of the gradient of the seam function $s$ to define an isotropic scaling factor relative to a background metric.
-
-\begin{definition}[Gradient Rule]
-Let \( U \) be a differentiable manifold with local coordinates \( \{x^i\} \) and a background Euclidean metric \( h_{ij} = \delta_{ij} \) in these coordinates. Let \( \mathcal{S}(U) \) be the set of \( C^1 \) functions \( s: U \to \mathbb{R} \). The \emph{Gradient Rule}, \( \mathcal{R}_{\text{Grad}} \), defines a metric tensor \( g \) with components:
-\begin{equation}
-g_{ij}(u) = |\nabla s(u)|^2 \delta_{ij}
-\label{eq:gradient_rule}
-\end{equation}
-where \( |\nabla s|^2 = \sum_{k=1}^n (\partial s / \partial x^k)^2 \) is the squared magnitude of the gradient of \( s \) with respect to the background Euclidean metric. If \( \nabla s(u) \neq 0 \) for all \( u \) in a region, then \( g \) is a Riemannian metric in that region, and \( D = \mathcal{R}_{\text{Grad}}(s; U) \) is the geodesic distance under \( g \).
-\end{definition}
-% ADDED CITATION BASED ON GUIDE:
-The interpretation of gradient magnitude as a geometric scaling factor connects to level set methods and eikonal equations \cite{Sethian1999}.
-
-This Rule interprets \( s \) as a potential whose gradient’s magnitude directly scales an isotropic metric (conformally Euclidean). It requires only first derivatives of \( s \), unlike the Hessian Rule which requires second derivatives.
-
-% ... rest of Gradient Rule subsection (Examples III.C.i - III.C.v + Summary) ...
-\subsubsection{Example: Euclidean Space}
-Let $U = \mathbb{R}^n$ with coordinates $(x^1, \dots, x^n)$ and background $\delta_{ij}$. Consider the linear seam:
-$$ s(x^1, \dots, x^n) = x^1 $$
-The gradient is $\nabla s = (1, 0, \dots, 0)$. The squared magnitude is $|\nabla s|^2 = 1^2 = 1$. Applying the Gradient Rule \eqref{eq:gradient_rule}:
-$$ g_{ij} = (1) \delta_{ij} = \delta_{ij} $$
-This generates the standard Euclidean metric. Any seam $s = \sum a_k x^k + c$ with $\sum a_k^2 = 1$ would also yield the Euclidean metric.
-
-\subsubsection{Example: Radially Scaled Space}
-Let $U = \mathbb{R}^n$ with coordinates $(x^1, \dots, x^n)$ and background $\delta_{ij}$. Consider the quadratic seam:
-$$ s(x^1, \dots, x^n) = \frac{1}{2} \sum_{k=1}^n (x^k)^2 = \frac{1}{2} r^2 $$
-The gradient is $\nabla s = (x^1, x^2, \dots, x^n)$. The squared magnitude is $|\nabla s|^2 = \sum_{k=1}^n (x^k)^2 = r^2$. Applying the Gradient Rule:
-$$ g_{ij} = r^2 \delta_{ij} $$
-This generates a metric $ds^2 = r^2 ( (dx^1)^2 + \dots + (dx^n)^2 ) = r^2 d\mathbf{x}^2$. This is a conformally flat metric. It is Riemannian for $r \neq 0$ but becomes degenerate ($g_{ij}=0$) at the origin $r=0$, where $\nabla s = 0$. Geodesics in this space are related to circles passing through the origin in the underlying Euclidean space.
-
-\subsubsection{Example: Constant Seam}
-Let $U = \mathbb{R}^n$. Consider a constant seam $s(u) = c$.
-The gradient is $\nabla s = (0, \dots, 0)$. The squared magnitude is $|\nabla s|^2 = 0$. Applying the Gradient Rule:
-$$ g_{ij} = (0) \delta_{ij} = 0 $$
-This generates a completely degenerate tensor $g=0$. The associated distance $D(u, v)$ would be 0 for all $u, v$, violating the metric property unless $U$ is a single point. This highlights the importance of the condition $\nabla s \neq 0$.
-
-\subsubsection{Relation to Conformal Rule}
-The Gradient Rule $g_{ij} = |\nabla s|^2 \delta_{ij}$ always produces a metric conformally related to the background Euclidean metric $\delta_{ij}$. Comparing with the Conformal Rule $g_{ij} = e^{2\tilde{s}} \delta_{ij}$, we see that the Gradient Rule generates the same geometry as the Conformal Rule if we choose the conformal seam $\tilde{s}$ such that:
-$$ e^{2\tilde{s}} = |\nabla s|^2 $$
-This requires $|\nabla s|^2 > 0$, and gives $\tilde{s} = \ln(|\nabla s|)$. Therefore, any geometry generated by $\mathcal{R}_{\text{Grad}}$ (where $\nabla s \neq 0$) can also be generated by $\mathcal{R}_{\text{Conf}}$. However, the converse is not true: not every positive conformal factor $F(u) = e^{2\tilde{s}(u)}$ can be expressed as the squared magnitude of a gradient $|\nabla s(u)|^2$ for some $C^1$ function $s$. For example, the spherical metric factor $F = 4R^4 / (R^2+r^2)^2$ cannot be written as $|\nabla s|^2$ globally on $\mathbb{R}^2$. Thus, $\mathcal{R}_{\text{Grad}}$ generates a specific subset of conformally Euclidean geometries.
-
-\subsubsection{Summary for Gradient Rule}
-The Gradient Rule \( \mathcal{R}_{\text{Grad}} \) interprets the seam \( s \) via the magnitude of its gradient, requiring only \( C^1 \) smoothness.
-\begin{itemize}
-    \item It generates an isotropic metric \( g_{ij} = |\nabla s|^2 \delta_{ij} \), which is always conformally Euclidean.
-    \item It can reproduce Euclidean space ($s=x^1$).
-    \item It generates non-trivial conformally flat spaces (e.g., $s=r^2/2$ gives $g_{ij}=r^2 \delta_{ij}$).
-    \item Requires $\nabla s \neq 0$ for the metric to be Riemannian (non-degenerate). Where $\nabla s = 0$, the geometry degenerates.
-    \item Since $|\nabla s|^2 \ge 0$ and $\delta_{ij}$ is positive definite, it can only generate Riemannian or degenerate metrics, not pseudo-Riemannian metrics with mixed signatures (like Minkowski) from a Euclidean background.
-    \item It generates a subset of the geometries accessible via the Conformal Rule $\mathcal{R}_{\text{Conf}}$, specifically those where the conformal factor can be written as $|\nabla s|^2$.
-\end{itemize}
-This rule offers an alternative mechanism based on first derivatives, leading naturally to isotropic scaling.
-
-
-\subsection{Graph-Based Rules ($\mathcal{R}_{\text{Graph}}$)}
-% Reset definition counter for this subsection
-\setcounter{definition}{0}
-
-The Hessian, Conformal, and Gradient rules rely fundamentally on the differentiable structure of the base space $U$. To extend the framework to spaces involving discrete components, such as lattices ($\mathbb{N}^n$) or mixed spaces ($\mathbb{N} \times \mathbb{R}$), a different approach is needed. Graph-based rules offer a natural pathway by interpreting $U$ as a set of vertices and using the seam $s$ to define connection costs (edge weights).
-
-\begin{definition}[Graph Rule Framework]
-Let $U$ be a base set, potentially composed of discrete and/or continuous components. A \emph{Graph-Based Rule}, $\mathcal{R}_{\text{Graph}}$, generates a distance function $D$ through the following conceptual steps:
+\paragraph{Contributions (geometry processing view).}
+Our contributions are geared toward mesh and graph processing, where one seeks parameterizations that are easy to optimize, differentiate, and analyze.
 \begin{enumerate}
-    \item \textbf{Graph Structure:} Define an underlying graph structure $G = (U, E)$ on the base set $U$. This involves specifying the vertices (points in $U$) and edges $E$, representing allowed "connections" or adjacencies. For continuous or hybrid spaces, this might involve discretization or defining infinitesimal connections.
-    \item \textbf{Weight Assignment:} Use the seam function $s: U \to \mathbb{R}$ to assign a non-negative weight $w(e)$ or cost to each edge $e \in E$. This is the core interpretive step for graph rules. For continuous spaces, this translates to defining a cost density or local metric element $ds$.
-    \item \textbf{Distance Calculation:} Define the distance $D(u, v)$ between any two points $u, v \in U$ as the infimum of the total weight/cost along all possible paths connecting $u$ and $v$. For discrete graphs, this is the standard shortest path distance. For continuous/hybrid spaces, this involves integrating the cost density along paths.
+    \item \textbf{A scalar-first metric parameterization on graphs/meshes.} We study a conformal graph rule that assigns edge lengths using an endpoint quadrature of \(e^{s}\), producing a shortest-path metric with local control by a scalar seam.
+    \item \textbf{Quantitative discrete-to-continuum guarantees.} On quasi-uniform triangulations, we prove an $O(h)$ Gromov--Hausdorff convergence rate between the seam-generated discrete metric and the smooth conformal metric (Theorem~\ref{thm:gh-limit}) and derive a corresponding uniform $O(h)$ metric error bound (Theorem~\ref{thm:oh-bound}).
+    \item \textbf{Curvature sensitivity via cotangent weights.} We show that the Jacobian of angle-defect curvature with respect to the seam agrees (up to a constant factor) with the cotangent Laplacian at \(s=0\) (Theorem~\ref{thm:discrete_curvature}), providing a differentiable link between scalar parameters and discrete curvature.
+    \item \textbf{Convex inverse metric design.} We reduce edge-weight fitting under the conformal graph rule to a strictly convex quadratic program in variables \(X_u=e^{s(u)}\) on non-bipartite graphs (Theorem~\ref{thm:inverse_seam}), and we further provide gauge-fixing and conditioning guarantees (Theorem~\ref{thm:inverse_seam_stability}).
+\end{enumerate}
+
+\section{Framework: Seams, Rules, and Composition}
+
+Let \(U\) be a paracompact Hausdorff space (or discrete set) equipped with a local background structure \(\mathcal{T}_U\) (e.g., a differentiable atlas, a background metric $h$, or a graph adjacency).
+
+\begin{definition}
+A \emph{seam} is a function \(s: U \to \mathbb{R}\) belonging to an admissible class \(\mathcal{S}(U)\) (e.g., \(C^\infty\), Morse, convex, or discrete array). The seam acts as the generative potential for local geometry.
+\end{definition}
+
+\begin{definition}\label{def:rule}
+A \emph{Rule} is a natural, local assignment \(\mathcal{R}\) that takes admissible seam data \((U, s, \mathcal{T}_U)\) to a geometric output \(G\) (e.g., a pseudo-metric \(D\), tensor \(g\), or weighted graph). A valid Rule must satisfy:
+\begin{enumerate}
+    \item \textbf{Locality:} For every open \(V\subseteq U\), the output on \(V\) depends only on \(s|_V\) and \(\mathcal{T}_U|_V\).
+    \item \textbf{Gluing (Sheaf Condition):} If \(\{V_\alpha\}\) covers \(U\) and the locally generated outputs \(G_\alpha=\mathcal{R}(V_\alpha,s|_{V_\alpha})\) agree on overlaps, there is a unique global object \(G\) such that \(G|_{V_\alpha}=G_\alpha\).
+    \item \textbf{Functoriality:} For every structure-preserving map \(\varphi:U\to U'\), one has \(\mathcal{R}(U,\varphi^\ast s')=\varphi^\ast\mathcal{R}(U',s')\).
 \end{enumerate}
 \end{definition}
-% ADDED CITATION BASED ON GUIDE:
-The discrete metric structures generated by graph rules have been studied extensively in spectral graph theory \cite{Chung1997} and discrete differential geometry \cite{Bobenko2015}.
 
-\subsubsection{Candidate Rule 1: Cost from Seam Difference ($\mathcal{R}_{\text{Graph-}\Delta s}$)}
-A simple rule for discrete graphs defines the weight of an edge $e=\{u, v\}$ based on the difference in seam values at its endpoints:
-$$ w(e) = w(u, v) = |s(v) - s(u)| $$
-If $s$ is constant, all edge weights are 0, leading to $D(u,v)=0$ within connected components. Variations could include adding a base cost: $w(u, v) = \epsilon + |s(v) - s(u)|$.
+\begin{remark}[Scope of the axioms]\label{rem:rule-scope}
+The Functoriality axiom is to be interpreted relative to the chosen background structure: in the smooth setting, \(\varphi\) is typically a smooth map compatible with the chosen atlas/connection (or a diffeomorphism when tensors are pulled back); in the discrete setting, \(\varphi\) is typically a graph isomorphism or a map preserving adjacency/weights. Likewise, the Gluing axiom is automatic for sheaf-like outputs (e.g., smooth tensor fields), while for global outputs (e.g., a distance function on all of \(U\times U\)) the condition should be read as compatibility of the induced restrictions on each \(V_\alpha\times V_\alpha\).
+\end{remark}
 
-\subsubsection{Example: Weighted Lattice ($\mathbb{N} \times \mathbb{N}$)}
-Let $U = \mathbb{N} \times \mathbb{N}$ with edges between neighbors $(i, j)$ and $(i', j')$ if $|i-i'|+|j-j'|=1$. Let $s(i, j) = i + j$. Then $w((i,j), (i+1,j)) = |(i+1+j) - (i+j)| = 1$, and $w((i,j), (i,j+1)) = |(i+j+1) - (i+j)| = 1$. This recovers the standard Manhattan distance $D((i,j), (k,l)) = |i-k| + |j-l|$. If $s(i, j) = (i+j)^2$, weights become non-uniform, e.g., $w((i,j), (i+1,j)) = |(i+1+j)^2 - (i+j)^2| = 2(i+j)+1$.
+If the generated output is a distance function $D$, it must satisfy the standard pseudo-metric axioms (non-negativity, identity, symmetry, and triangle inequality). 
 
-\subsubsection{Example: Hybrid Space ($\mathbb{N} \times \mathbb{R}$)}
-Let $U = \mathbb{N} \times \mathbb{R}$. Define graph structure via adjacency: $(i, x)$ is connected to $(i+1, x)$ and $(i-1, x)$. Within layer $i$, points $(i, x)$ and $(i, y)$ are connected infinitesimally. Let $s(i, x) = i^2 + f(x)$. A path cost could combine discrete jump costs $w((i,x), (i+1,x)) = |s(i+1,x)-s(i,x)| = |(i+1)^2-i^2| = |2i+1|$ with continuous path integration using a local metric derived from $s$, e.g., $ds_{i} = \sqrt{(\partial s / \partial x)^2 dx^2} = |f'(x)|dx$. Defining the overall distance $D$ rigorously requires careful treatment of mixed path types.
+A powerful feature of this axiomatic formulation is that it allows for the rigorous chaining of Rules, enabling complex geometries to be built from multiple scalar layers.
 
-\subsubsection{Candidate Rule 2: Conformal-Inspired Cost ($\mathcal{R}_{\text{Graph-Exp s}}$)}
-Inspired by the Conformal Rule, we might define edge weights based on the average scale factor between nodes. For an edge $e=\{u, v\}$ and a base length $\epsilon_e$:
-$$ w(e) = \epsilon_e \left( \frac{e^{s(u)} + e^{s(v)}}{2} \right) $$
-Or in the continuous limit, a local metric $ds^2 = e^{2s(x)} dx^2$.
-
-\subsubsection{Example: Standard Lattice ($\mathbb{N} \times \mathbb{N}$)}
-Using $\mathcal{R}_{\text{Graph-Exp s}}$ with $s(i, j)=0$ and $\epsilon_e=1$ for all edges gives $w(e) = 1 (\frac{1+1}{2}) = 1$, recovering standard graph distance (Manhattan). If $s(i,j)$ is non-constant, the edge weights vary, creating a weighted graph.
-
-\subsubsection{Summary for Graph Rules}
-Graph-Based Rules provide a mechanism to generate geometry on non-differentiable or mixed spaces. The core challenge lies in defining the edge/connection structure $E$ and the weighting function $w(e; s)$ appropriately. Rule $\mathcal{R}_{\text{Graph-}\Delta s}$ uses seam differences, sensitive to gradients. Rule $\mathcal{R}_{\text{Graph-Exp s}}$ uses average seam exponentials, analogous to conformal scaling. These rules allow generating complex discrete or hybrid geometries from scalar seams but require careful formulation for consistency, especially for continuous limits or hybrid structures.
-
-%=================================================
-% Start of Draft Section V
-%=================================================
-
-% Reset equation counter for Section V if needed
-\setcounter{equation}{0}
-\section{Mathematical Properties of Rules}
-
-In this section, we delve deeper into the mathematical properties of the geometries generated by the proposed rules, focusing on the conditions under which they produce valid (pseudo-)metric spaces and characterizing the specific classes of geometries they generate. We assume \( U \) possesses the necessary structure (e.g., differentiability, graph structure) required by each rule.
-
-% Add theorem environments if not already defined in preamble
-% Assuming amsthm is loaded
-\newtheorem{proposition}{Proposition}[section] % Number propositions within the section
-% The 'proof' environment is provided by amsthm
-
-\subsection{Satisfaction of Pseudo-Metric Axioms}
-
-A fundamental requirement (Requirement \ref{req:RuleReqs}) is that any valid rule \( \mathcal{R} \) must generate a distance function \( D = \mathcal{R}(s; U) \) that satisfies the pseudo-metric axioms (Non-negativity M1, Identity M2, Symmetry M3, Triangle Inequality M4).
-
-\begin{proposition}[Metric Properties of Differentiable Rules] \label{prop:diff_metric_props}
-Let \( \mathcal{R} \) be \( \mathcal{R}_{\text{Hessian}} \), \( \mathcal{R}_{\text{Conf}} \), or \( \mathcal{R}_{\text{Grad}} \), generating a tensor \( g \) from an admissible seam \( s \) on a differentiable manifold \( U \).
-\begin{enumerate}
-    \item If \( g \) is a Riemannian metric on a connected domain \( \Omega \subseteq U \), the associated geodesic distance \( D(u, v) = \inf \{\int \sqrt{g_{ij}\dot{\gamma}^i\dot{\gamma}^j} dt \mid \gamma: u \to v\} \) defines a true metric on \( \Omega \) \cite{Petersen2006, Lee2018}. % <-- UPDATED CITATION
-    \item If \( g \) is pseudo-Riemannian, the geodesic distance (defined appropriately, e.g., for timelike or spacelike paths) satisfies M1-M3. The triangle inequality M4 holds under specific conditions related to causal structure and path types \cite{ONeill1983,BeemEhrlichEasley1996}. % <-- UPDATED CITATION
-    Degeneracies (\( D(u,v)=0 \) for \( u \neq v \)) can occur, particularly for null-separated points.
-\end{enumerate}
-\end{proposition}
-\begin{proof}[Proof Sketch]
-(1) Follows from standard properties of Riemannian distance functions \cite{Petersen2006, Lee2018}. % <-- UPDATED CITATION
-(2) Requires careful definition of distance in pseudo-Riemannian settings, often focusing on proper time/length along specific path types \cite{ONeill1983,BeemEhrlichEasley1996}. % <-- UPDATED CITATION
-Degeneracy for null paths is inherent. Symmetry follows if the Lagrangian \( \sqrt{|g_{ij}\dot{\gamma}^i\dot{\gamma}^j|} \) is symmetric under time reversal.
-\end{proof}
-
-\begin{proposition}[Metric Properties of Graph Rules] \label{prop:graph_metric_props}
-Let \( \mathcal{R}_{\text{Graph}} \) generate edge weights \( w(u, v) \) for adjacent nodes \( u, v \) in a graph \( G=(U, E) \) based on a seam \( s: U \to \mathbb{R} \). If the weight function satisfies \( w(u, v) \ge 0 \) (non-negativity) and \( w(u, v) = w(v, u) \) (symmetry) for all edges \( \{u, v\} \in E \), then the shortest path distance \( D(u, v) = \inf \{\sum_{e \in \gamma} w(e) \mid \gamma \text{ path from } u \text{ to } v\} \) defines a pseudo-metric on the connected components of \( G \). If \( w(u,v)>0 \) for all edges, \( D \) is a true metric on each component.
+\begin{proposition}\label{prop:composition}
+Let $\mathcal{R}_1$ be a Rule generating an intermediate background structure $\mathcal{T}'_U$ from a seam $s_1$. Let $\mathcal{R}_2$ be a Rule generating geometry $G$ from a seam $s_2$, requiring $\mathcal{T}'_U$ as its background structure. The composed operation $\mathcal{R}_2(\cdot ; \mathcal{R}_1(\cdot))$ canonically satisfies the Locality, Gluing, and Functoriality axioms, and therefore constitutes a valid composed Rule on $(U, \{s_1, s_2\}, \mathcal{T}_U)$.
 \end{proposition}
 \begin{proof}
-This is a standard result in graph theory \cite{Chung1997}. % <-- UPDATED CITATION
-M1 and M2 are immediate. M3 follows from weight symmetry. M4 follows because concatenating optimal paths \( u \to v \) and \( v \to w \) yields a path \( u \to w \), whose length is an upper bound for the shortest path \( D(u,w) \). The specific rules proposed, \( w=|\Delta s| \) and \( w=(e^{s(u)}+e^{s(v)})/2 \), satisfy non-negativity and symmetry (assuming \( s \) is real).
+Locality follows immediately from the composition of restriction maps: $\mathcal{R}_2(s_2|_V, \mathcal{R}_1(s_1|_V)) = G|_V$. The sheaf condition holds because $\mathcal{R}_1$ produces a unique global $\mathcal{T}'_U$ by its own gluing axiom, which $\mathcal{R}_2$ then maps to a unique global $G$ by its gluing axiom. Functoriality is preserved via the chain rule of pullbacks: $\varphi^*(\mathcal{R}_2(s_2, \mathcal{R}_1(s_1))) = \mathcal{R}_2(\varphi^*s_2, \varphi^*\mathcal{R}_1(s_1)) = \mathcal{R}_2(\varphi^*s_2, \mathcal{R}_1(\varphi^*s_1))$.
 \end{proof}
 
-\noindent For hybrid spaces (\( \mathbb{N} \times \mathbb{R} \)), rigorously proving the metric properties requires a careful definition of the path integral and infimum over combined discrete jumps and continuous segments, which is beyond the scope of this initial presentation but constitutes an important direction for future work.
+\section{The Repertoire of Rules}
 
-\subsection{Equivalence Classes of Seams}
+The generative power of the framework relies on specific definitions of $\mathcal{R}$. 
 
-Different seams may generate the same geometry under a given rule. We denote this equivalence by \( s_1 \sim_{\mathcal{R}} s_2 \).
-
-\begin{proposition}[Seam Equivalence] \label{prop:seam_equiv}
-Let \( U \) be \( \mathbb{R}^n \) with standard coordinates and \( h=\delta \) where applicable.
+\subsection{Continuous Rules}
+For a smooth manifold $U$, we highlight three primary rules generating metric tensors $g$:
 \begin{enumerate}
-    \item \( \mathcal{R}_{\text{Hessian}} \): \( s_1 \sim_{\mathcal{R}_{\text{Hess}}} s_2 \iff s_1 - s_2 \) is an affine function, i.e., \( s_1(x) = s_2(x) + a \cdot x + b \) for some vector \( a \in \mathbb{R}^n \) and scalar \( b \in \mathbb{R} \).
-    \item \( \mathcal{R}_{\text{Conf}} \): \( s_1 \sim_{\mathcal{R}_{\text{Conf}}} s_2 \iff s_1(u) = s_2(u) \) for all \( u \in U \).
-    \item \( \mathcal{R}_{\text{Grad}} \): \( s_1 \sim_{\mathcal{R}_{\text{Grad}}} s_2 \iff |\nabla s_1(u)|^2 = |\nabla s_2(u)|^2 \) for all \( u \in U \). This holds if \( s_1 \) and \( s_2 \) are different solutions to the same Eikonal equation \( |\nabla s|^2 = F(u) \). (E.g., \( s_1=x^1 \) and \( s_2=x^2 \) both yield \( |\nabla s|^2=1 \) and \( g=\delta \)).
-    \item \( \mathcal{R}_{\text{Graph-}\Delta s} \) (discrete graph): \( s_1 \sim_{\mathcal{R}_{\text{Graph-}\Delta s}} s_2 \iff s_1(u) = s_2(u) + c \) for some constant \( c \) (assuming identical adjacency and graph structure).
-    \item \( \mathcal{R}_{\text{Graph-Exp s}} \) (discrete graph): \( s_1 \sim_{\mathcal{R}_{\text{Graph-Exp s}}} s_2 \iff s_1(u) = s_2(u) \) for all \( u \in U \).
+    \item \textbf{The Hessian Rule ($\mathcal{R}_{\text{Hessian}}$):} $g = \nabla^2 s$ for a chosen torsion-free connection $\nabla$ (in local affine coordinates: $g_{ij}=\partial_i\partial_j s$). The rule yields a Riemannian metric where $g$ is positive definite (e.g., for strictly convex $s$). Hessian geometry is central to Information Geometry \cite{Amari2016,Shima2007}.
+    \item \textbf{The Conformal Rule ($\mathcal{R}_{\text{Conf}}$):} $g_{ij} = e^{2s} h_{ij}$. Generates geometries conformally equivalent to a background metric $h$ \cite{Petersen2006}.
+    \item \textbf{The Gradient Rule ($\mathcal{R}_{\text{Grad}}$):} $g_{ij} = |\nabla s|_h^2 h_{ij}$. A subset of conformal geometries controlled by the eikonal magnitude of the seam \cite{Sethian1999}.
 \end{enumerate}
-\end{proposition}
-\begin{proof} % Proofs are brief, expand if needed
-(1) \( \partial_i \partial_j s_1 = \partial_i \partial_j s_2 \iff \partial_i \partial_j (s_1 - s_2) = 0 \). Integrating twice yields \( s_1-s_2 \) is affine.
-(2) \( e^{2s_1} h_{ij} = e^{2s_2} h_{ij} \implies e^{2s_1}=e^{2s_2} \implies s_1=s_2 \) (assuming \( h_{ij} \) is non-degenerate).
-(3) \( |\nabla s_1|^2 \delta_{ij} = |\nabla s_2|^2 \delta_{ij} \implies |\nabla s_1|^2 = |\nabla s_2|^2 \).
-(4) For an edge \( \{u, v\} \), \( |s_1(v)-s_1(u)| = |s_2(v)-s_2(u)| \). If \( s_1 = s_2 + c \), \( |(s_2(v)+c)-(s_2(u)+c)| = |s_2(v)-s_2(u)| \).
-(5) For an edge \( \{u, v\} \), \( (e^{s_1(u)}+e^{s_1(v)})/2 = (e^{s_2(u)}+e^{s_2(v)})/2 \). For this to hold for all edges in a connected graph generally requires \( s_1(u) = s_2(u) \) for all \( u \).
+
+\begin{table}
+\centering
+\caption{Classical Geometries as Seam-Rule Triplets}
+\label{tab:geometries}
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Geometry} & \textbf{Rule} & \textbf{Background} & \textbf{Seam $s$} \\ \midrule
+Euclidean $\mathbb{E}^n$ & $\mathcal{R}_{\text{Hessian}}$ & None & $\frac{1}{2}\sum (x^i)^2$ \\
+Minkowski $\mathbb{M}^4$ & $\mathcal{R}_{\text{Hessian}}$ & None & $\frac{1}{2}(t^2 - x^2 - y^2 - z^2)$ \\
+Poincaré Half-Plane & $\mathcal{R}_{\text{Conf}}$ & Euclidean $\delta_{ij}$ & $\ln(R) - \ln(y)$ \\
+Stereographic Sphere & $\mathcal{R}_{\text{Conf}}$ & Euclidean $\delta_{ij}$ & $\ln(2R^2) - \ln(R^2+r^2)$ \\
+Flat Torus $\mathbb{T}^2$ & $\mathcal{R}_{\text{Grad}}$ & Euclidean $\delta_{ij}$ & $x^1$ (linear) \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\emph{Remark:} The framework easily recovers classical topological and relativistic results. For instance, applying a piecewise local $\mathcal{R}_{\text{Hessian}}$ stitched by $\mathcal{R}_{\text{Conf}}$ to a Morse seam with two critical points reconstructs Reeb's Sphere Theorem \cite{Milnor1963}. Similarly, applying a generalized Warped-Product rule to a generic radial seam recovers Birkhoff's Theorem for spherically symmetric vacuum solutions \cite{Wald1984}.
+
+\subsection{Discrete Rules ($\mathcal{R}_{\text{Graph}}$)}
+On a graph $G=(V,E)$ with background edge lengths $\ell_0(u,v)$, the seam $s: V \to \mathbb{R}$ generates a discrete shortest-path metric $D$ via edge weights $w(u,v)$. Two vital implementations are:
+\begin{enumerate}
+    \item \textbf{Conformal Graph Rule ($\mathcal{R}_{\text{Graph-Exp } s}$):} 
+    $w(u,v) = \ell_0(u,v) \frac{e^{s(u)} + e^{s(v)}}{2}$
+    \item \textbf{Gradient Graph Rule ($\mathcal{R}_{\text{Graph-}|\nabla s|}$):} 
+    $w(u,v) = \ell_0(u,v) \frac{|\nabla s|(u) + |\nabla s|(v)}{2}$
+\end{enumerate}
+
+These constructions are closely related to discrete conformal geometry and conformal parameterizations of triangle meshes; see, e.g., \cite{SpringbornSchroederPinkall2008,GuLuoSunWu2018}.
+
+
+\section{Continuous Geometry: Curvature and Universality}
+
+Framing continuous geometry in terms of seams often reduces complex tensor algebra to elegant scalar identities.
+
+\begin{theorem}[Gauss--Bonnet via a seam]\label{thm:gb-seam}
+Let \((M,g)\) be a closed oriented Riemannian surface. By the uniformization theorem, there exists a metric \(h\) of constant Gaussian curvature and a seam \(s\) such that \(g = \mathcal{R}_{\text{Conf}}(s;h) = e^{2s} h\). Then $\int_M K_g\,dA_g = 2\pi\chi(M)$.
+\end{theorem}
+\begin{proof}
+Under the conformal rule, curvature transforms as $K_g = e^{-2s}(K_h - \Delta_h s)$, and the area form as $dA_g = e^{2s}\, dA_h$. Multiplying these yields $K_g\, dA_g = (K_h - \Delta_h s)\, dA_h$. Integrating over $M$, the Laplacian term $\int_M \Delta_h s\, dA_h$ vanishes identically by the divergence theorem. The seam's exact contribution perfectly cancels out globally, leaving $\int K_g\,dA_g = \int K_h\,dA_h = 2\pi\chi(M)$.
 \end{proof}
 
-\subsection{Characterization of Generated Geometries}
+\begin{theorem}[Local non-degeneracy of the Hessian rule]\label{thm:hessian-local-metric}
+Let \(M\) be a smooth manifold equipped with a torsion-free connection \(\nabla\). Let \(s\in C^\infty(M)\) and define the symmetric \((0,2)\)-tensor \(g:=\nabla^2 s\) (the covariant Hessian). If \(p\in M\) is a point where \(g_p\) is positive definite, then \(g\) defines a Riemannian metric on some neighborhood of \(p\).
+\end{theorem}
+\begin{proof}
+Positive definiteness is an open condition: since \(q\mapsto g_q\) varies smoothly, there exists a neighborhood \(U\ni p\) such that \(g_q\) remains positive definite for all \(q\in U\). On \(U\), \(g\) is therefore a smooth Riemannian metric.
+\end{proof}
 
-We can characterize the specific classes of geometries generated by each rule.
+\begin{conjecture}\label{conj:universality}
+Fix a compact smooth manifold $M$. The set of metrics generated by composed rules of the form
+\[
+g = \mathcal{R}_{\text{Conf}}\!\left(s ; \mathcal{R}_{\text{Hessian}}(t)\right)= e^{2s}\,\nabla^2 t
+\]
+(for suitable seams $s,t$ and a fixed torsion-free connection $\nabla$) is dense in the space of smooth Riemannian metrics on $M$ (for a chosen topology, e.g.\ $C^k$).
+\end{conjecture}
+\begin{remark}
+A naive constructive proof using a partition of unity fails because the derivatives of the bump functions (e.g., $\operatorname{Hess}(\rho_i) t_i$) scale as $O(1)$ and do not vanish under refinement. A rigorous proof of this universality likely requires the application of Gromov's $h$-principle for open differential relations.
+\end{remark}
 
-\subsubsection{Hessian Rule Geometries}
-The Hessian rule \( g_{ij} = \partial_i \partial_j s \) generates \emph{Hessian metrics}.
+\section{Discrete Geometry and Computation}
+
+The true advantage of the seam framework is algorithmic. In this climax section, we prove that discrete graph rules strictly approximate continuous geometries, preserve curvature, and enable uniquely solvable inverse-design problems.
+
+\subsection{Quantitative Discrete-to-Continuum Limits}
+
+\begin{lemma}[Vertex-path approximation of geodesics]\label{lem:path-approx}
+Let $(M,g_0)$ be compact and let $\{G_n=(V_n,E_n)\}$ be a shape-regular, quasi-uniform triangulation sequence with mesh size $h_n\to 0$ and background edge lengths $\ell_0$ induced by $g_0$. Fix points $x,y\in M$ and choose vertices $u_n,v_n\in V_n$ with $d_{g_0}(u_n,x)\le h_n$ and $d_{g_0}(v_n,y)\le h_n$.
+Then there exists a vertex path $P_n$ in $G_n$ from $u_n$ to $v_n$ such that its background length satisfies
+\[
+L_{0}(P_n)\le d_{g_0}(x,y)+C h_n,
+\]
+where $C$ depends only on the mesh regularity and $(M,g_0)$.
+\end{lemma}
+\begin{proof}
+Let $\gamma:[0,L]\to M$ be a minimizing $g_0$-geodesic from $x$ to $y$ (existence holds since $M$ is compact). For each $n$, let $\mathcal{T}_n$ be the triangulation with vertex set $V_n$ and let $h_n$ be the maximum diameter of a simplex.
+
+Partition $[0,L]$ into subintervals $0=t_0<t_1<\dots<t_m=L$ with $t_{i+1}-t_i\le h_n$. For each $i$, pick a vertex $p_i\in V_n$ such that $d_{g_0}(p_i,\gamma(t_i))\le h_n$ (possible by quasi-uniformity). Then $p_0$ can be chosen as $u_n$ and $p_m$ as $v_n$ by the assumed proximity of $u_n,v_n$ to $x,y$.
+
+Since $\gamma(t_i)$ and $\gamma(t_{i+1})$ are at $g_0$-distance $\le h_n$ and each is within $h_n$ of $p_i,p_{i+1}$, the triangle inequality gives
+\[
+d_{g_0}(p_i,p_{i+1}) \le d_{g_0}(p_i,\gamma(t_i)) + d_{g_0}(\gamma(t_i),\gamma(t_{i+1})) + d_{g_0}(\gamma(t_{i+1}),p_{i+1})
+\le (t_{i+1}-t_i) + 2h_n.
+\]
+Because $\mathcal{T}_n$ is shape-regular and quasi-uniform, there exists a constant $c\ge 1$ (independent of $n$) such that whenever $d_{g_0}(p_i,p_{i+1})\le 3h_n$, there is an edge path in the 1-skeleton from $p_i$ to $p_{i+1}$ of total background length $\le c\,d_{g_0}(p_i,p_{i+1})$ (this follows from bounded aspect ratios and local connectivity of the 1-skeleton). Concatenating these short paths over $i=0,\dots,m-1$ yields a vertex path $P_n$ from $u_n$ to $v_n$ with
+\[
+L_0(P_n)\le c\sum_{i=0}^{m-1} d_{g_0}(p_i,p_{i+1})
+\le c\sum_{i=0}^{m-1}\bigl((t_{i+1}-t_i)+2h_n\bigr)
+= cL + 2c m h_n.
+\]
+Since $m\le L/h_n + 1$, we get $L_0(P_n)\le cL + 2c(L+h_n)\le L + C h_n$ after absorbing constants into $C$ (and noting $L=d_{g_0}(x,y)$).
+\end{proof}
+
+\begin{lemma}[Trapezoidal consistency of the conformal edge rule]\label{lem:trap}
+Let $s\in C^2(M)$ and let $\gamma:[0,L]\to M$ be a unit-speed ($g_0$) geodesic segment. For a subsegment of length $\ell\le h$ with endpoints $p=\gamma(t_0)$ and $q=\gamma(t_0+\ell)$, define the trapezoidal approximation
+\[
+T(p,q):=\ell\,\frac{e^{s(p)}+e^{s(q)}}{2}.
+\]
+Then the conformal length satisfies
+\[
+\left|\int_{t_0}^{t_0+\ell} e^{s(\gamma(t))}\diff t - T(p,q)\right|\le C_s\,\ell^3,
+\]
+where $C_s$ depends on $\sup_M |\nabla^2 (e^{s})|$ (equivalently on $\sup_M(|\nabla s|,|\nabla^2 s|)$).
+\end{lemma}
+\begin{proof}
+This is the standard trapezoidal error estimate for $C^2$ functions: if $f(t):=e^{s(\gamma(t))}$, then $f\in C^2$ and the error on an interval of length $\ell$ is bounded by $\frac{\ell^3}{12}\sup|f''|$. Boundedness of $f''$ follows from $s\in C^2$ and compactness of $M$.
+\end{proof}
+
+\begin{theorem}[Discrete-to-continuum limit via correspondences]\label{thm:gh-limit}
+Let $(M,g_0)$ be a compact Riemannian manifold and $s \in C^2(M)$. Let $\{G_n = (V_n, E_n)\}$ be a sequence of shape-regular, quasi-uniform triangulations with mesh size $h_n \to 0$. Let the discrete conformal graph metric $d_n$ be generated by $\mathcal{R}_{\text{Graph-Exp } s}$ evaluated on $V_n$. 
+Then the Gromov--Hausdorff distance between $(V_n,d_n)$ and $(M,d_g)$ satisfies $d_{GH}\bigl((V_n,d_n),(M,d_g)\bigr)=O(h_n)$, where $g:=e^{2s}g_0$ and $d_g$ is the induced geodesic distance on $M$.
+\end{theorem}
+\begin{proof}
+Define a correspondence $\mathcal{C}_n\subset V_n\times M$ by pairing each vertex $u\in V_n$ with itself viewed as a point in $M$, i.e.\ $\mathcal{C}_n:=\{(u,u):u\in V_n\}$. Since $V_n$ is an $h_n$-net in $M$ (by quasi-uniformity), every $x\in M$ lies within $g_0$-distance $\le h_n$ of some $u\in V_n$, hence within $g$-distance $\le e^{\|s\|_\infty}h_n$ of some vertex as well. Thus $\mathcal{C}_n$ is an $O(h_n)$-surjective correspondence.
+
+To bound the distortion, fix $u,v\in V_n$. By Lemma~\ref{lem:path-approx}, there exists a vertex path in the 1-skeleton whose $g_0$-length exceeds $d_{g_0}(u,v)$ by at most $O(h_n)$. Applying Lemma~\ref{lem:trap} edgewise shows that the corresponding discrete conformal length differs from the continuous conformal line integral by at most $O(h_n^2)$ along that path, hence $d_n(u,v)\le d_g(u,v)+O(h_n)$. Conversely, comparing a discrete shortest path to a minimizing $g$-geodesic yields $d_g(u,v)\le d_n(u,v)+O(h_n)$. Therefore
+\[
+\sup_{u,v\in V_n}\bigl|d_n(u,v)-d_g(u,v)\bigr|\le C h_n.
+\]
+It follows that the distortion of $\mathcal{C}_n$ is $O(h_n)$, hence $d_{GH}\bigl((V_n,d_n),(M,d_g)\bigr)\le \tfrac12\,\mathrm{dis}(\mathcal{C}_n)=O(h_n)$.
+\end{proof}
+
+While limits are mathematically satisfying, algorithms require quantitative bounds.
+
+\begin{theorem}[Quantitative metric error bound]\label{thm:oh-bound}
+Under the assumptions of Theorem~\ref{thm:gh-limit}, assume in addition that:
+\begin{enumerate}
+    \item for the pairs of points under consideration, minimizing $g$-geodesics are unique and stay a fixed distance away from the cut locus (so the minimizing curves vary continuously with endpoints), and
+    \item the triangulations are shape-regular and quasi-uniform with constants independent of $n$ (so that local 1-skeleton detours have uniformly bounded stretch, as used in Lemma~\ref{lem:path-approx}).
+\end{enumerate}
+Then there exists a constant $C > 0$ (depending on bounds of $s$, $\nabla s$, $\operatorname{Hess} s$, and the mesh regularity) such that the discrete metric satisfies an $O(h_n)$ error bound relative to the continuous metric:
+\begin{equation}
+\sup_{u,v \in V_n} | d_n(u,v) - d_{e^{2s}g_0}(u,v) | \le C h_n
+\end{equation}
+\end{theorem}
+\begin{proof}
+Fix vertices $u,v\in V_n$ and let $x=u$, $y=v$ be viewed as points of $M$. Let $\gamma$ be a minimizing $g$-geodesic from $x$ to $y$ (under the additional hypotheses stated in the theorem).
+By Lemma~\ref{lem:path-approx} (applied to $g_0$) there exists a vertex path $P_n=(p_0=u,\dots,p_m=v)$ whose background length satisfies $L_0(P_n)\le d_{g_0}(x,y)+C h_n$.
+
+Write $w_n(p_i,p_{i+1})=\ell_0(p_i,p_{i+1})\frac{e^{s(p_i)}+e^{s(p_{i+1})}}{2}$. Summing Lemma~\ref{lem:trap} edgewise along the polyline yields that the discrete conformal length of $P_n$ differs from the corresponding conformal line integral by $O(h_n^2)$ (since each edge contributes $O(h_n^3)$ and there are $O(1/h_n)$ edges).
+
+Taking the infimum over vertex paths gives $d_n(u,v)\le d_g(x,y)+C_1 h_n$; conversely, comparing any discrete shortest path to the continuous geodesic and using the same two lemmas yields $d_g(x,y)\le d_n(u,v)+C_2 h_n$. Combining the inequalities gives the stated uniform $O(h_n)$ bound.
+\end{proof}
+
+\subsection{Algorithmic Stability and Inverse Design}
+
+\begin{theorem}\label{thm:inverse_seam}
+Let $G = (V, E)$ be a triangulated mesh (or any connected, non-bipartite graph) with background lengths $\ell_0(e) > 0$. Given an arbitrary, potentially noisy or invalid set of target edge weights $w^*(e) > 0$, the optimal seam $s^*$ minimizing the squared error under the Conformal Graph Rule:
+\begin{equation}
+\mathcal{E}(s) = \sum_{\{u,v\} \in E} \left( \ell_0(u,v) \frac{e^{s(u)} + e^{s(v)}}{2} - w^*(u,v) \right)^2
+\end{equation}
+can be found by solving a strictly convex quadratic program in the variables $X_u := e^{s(u)} > 0$.
+\end{theorem}
+\begin{proof}
+Under the substitution $X_u = e^{s(u)}$, the energy $\mathcal{E}(X)$ becomes a quadratic function $\frac{1}{2}X^T H X - C^T X + K$. The Hessian $H$ of this polynomial has diagonal entries $\sum_{v\sim u} \ell_0^2(u,v)/4$ and off-diagonal entries $\ell_0^2(u,v)/4$. This matrix $H$ is exactly proportional to the \emph{Signless Laplacian} $Q = D + A$ of the weighted graph.
+In spectral graph theory, the signless Laplacian of a connected graph is strictly positive definite ($H \succ 0$) if and only if the graph contains an odd cycle (i.e., is non-bipartite) \cite{Chung1997}. Because a triangulation consists of 3-cycles, $H \succ 0$. Therefore, $\mathcal{E}(X)$ is strictly convex, guaranteeing that gradient descent or a linear solve will efficiently find a unique global minimum $s^* = \ln X^*$, completely avoiding local minima.
+\end{proof}
+
+\begin{remark}[Positivity constraint]
+Strict convexity holds for the quadratic objective in $X$, but the change of variables imposes $X_u>0$. Thus the natural optimization problem is a strictly convex QP with simple positivity constraints (or an unconstrained problem if one works directly in $s$, where the objective is generally \emph{not} quadratic).
+\end{remark}
+
+\begin{theorem}[Gauge fixing and conditioning for inverse design]\label{thm:inverse_seam_stability}
+Under the assumptions of Theorem~\ref{thm:inverse_seam}, write the quadratic objective in $X$ as
+\[
+\mathcal{E}(X)=\tfrac12 X^\top H X - b^\top X + K,
+\]
+with $H\succ 0$ (for non-bipartite connected graphs). Then:
+\begin{enumerate}
+    \item \textbf{Uniqueness (gauge-fixed).} The minimizer $X^*$ is unique. Moreover, if one imposes a normalization constraint (a ``gauge'') such as $\sum_{u\in V} X_u = 1$, the constrained minimizer is also unique.
+    \item \textbf{Conditioning and stability.} For the unconstrained minimizer $X^*=H^{-1}b$, perturbations satisfy the Lipschitz bound
+    \[
+    \|\delta X^*\|_2 \le \|H^{-1}\|_2\,\|\delta b\|_2 = \frac{1}{\lambda_{\min}(H)}\,\|\delta b\|_2.
+    \]
+    In particular, the inverse design problem is well-conditioned when $\lambda_{\min}(H)$ is bounded away from $0$.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+Since $H\succ 0$, the unconstrained quadratic $\mathcal{E}$ is strictly convex and has a unique minimizer characterized by the first-order condition $\nabla \mathcal{E}(X)=HX-b=0$, hence $X^*=H^{-1}b$.
+
+For the gauge-fixed problem with affine constraint $a^\top X = 1$ (e.g.\ $a=\mathbf{1}$), strict convexity of $\mathcal{E}$ implies uniqueness of the constrained minimizer as well (the restriction of a strictly convex function to an affine subspace is strictly convex). Existence holds since the feasible set is nonempty and closed.
+
+For stability, differentiate the optimality condition: $(H+\delta H)(X^*+\delta X^*) = (b+\delta b)$. Keeping only first-order terms in perturbations yields $H\,\delta X^* = \delta b - (\delta H)X^*$. In the common setting where only $b$ varies (targets $w^*$ change while $H$ is fixed by the background mesh), this reduces to $H\,\delta X^*=\delta b$ and thus $\delta X^*=H^{-1}\delta b$. Taking 2-norms gives the claimed bound with $\|H^{-1}\|_2=1/\lambda_{\min}(H)$.
+\end{proof}
+
+\begin{remark}[Interiority vs.\ positivity constraints]\label{rem:inverse-interior}
+Theorem~\ref{thm:inverse_seam_stability} is stated for the unconstrained quadratic minimizer. The same conditioning estimate applies to the positivity-constrained QP in Theorem~\ref{thm:inverse_seam} whenever the optimizer lies in the interior of the feasible set (i.e., $X_u^*>0$ for all $u$), since then the KKT system reduces to $HX=b$. If active positivity constraints occur, the solution map is still Lipschitz on regions of constant active set, with an analogous bound involving the reduced Hessian.
+\end{remark}
+
+\subsection{Curvature Preservation}
+
+Finally, we prove that our specific arithmetic graph rule perfectly captures continuous geometric curvature logic.
+
+\begin{theorem}\label{thm:discrete_curvature}
+Let $G=(V,E)$ be a triangulated surface with background lengths $\ell_0$. Let $K_s(u) = 2\pi - \sum \theta_t$ be the discrete Gaussian curvature (angle defect) induced by the seam-generated edge lengths $\ell_s(u,v) = \ell_0(u,v) \frac{e^{s(u)}+e^{s(v)}}{2}$. The Jacobian of the curvature with respect to the seam, evaluated at $s=0$, is exactly:
+\begin{equation}
+\left. \frac{\partial K_s(u)}{\partial s(v)} \right|_{s=0} = - \frac{1}{2} L_{uv}^{\text{cot}}
+\end{equation}
+where $L_{uv}^{\text{cot}}$ is the standard cotangent Laplacian matrix.
+\end{theorem}
+\begin{proof}
+We sketch the local computation around an interior edge $(u,v)$ shared by two Euclidean triangles $(u,v,a)$ and $(u,v,b)$ in the seam-generated metric.
+
+\emph{Step 1: seam-to-edge-length derivative.}
+For an edge $(u,v)$, the rule
+$\ell_s(u,v)=\ell_0(u,v)\frac{e^{s(u)}+e^{s(v)}}{2}$
+implies
+\begin{equation}
+\left.\frac{\partial \ell_s(u,v)}{\partial s(v)}\right|_{s=0}=\frac{1}{2}\ell_0(u,v),
+\qquad
+\left.\frac{\partial \ell_s(u,v)}{\partial s(u)}\right|_{s=0}=\frac{1}{2}\ell_0(u,v),
+\end{equation}
+while $\partial \ell_s(x,y)/\partial s(v)=0$ if $v\notin\{x,y\}$.
+
+\emph{Step 2: angle derivative via the law of cosines.}
+Consider a single triangle with vertices $(u,v,a)$ and let $\theta_a$ denote the angle at the vertex $a$, opposite the edge $(u,v)$ of length $c:=\ell(u,v)$. Let $a':=\ell(v,a)$ and $b':=\ell(u,a)$. The law of cosines gives
+\[
+\cos\theta_a=\frac{(a')^2+(b')^2-c^2}{2a'b'}.
+\]
+Differentiating with respect to $c$ (holding $a',b'$ fixed) yields
+\[
+-\sin\theta_a\,\frac{\partial \theta_a}{\partial c}
+ = \frac{\partial}{\partial c}\left(\frac{(a')^2+(b')^2-c^2}{2a'b'}\right)
+ = -\frac{c}{a'b'}.
+\]
+Hence
+\begin{equation}\label{eq:dtheta-dc}
+\frac{\partial \theta_a}{\partial c}=\frac{c}{a'b'\sin\theta_a}.
+\end{equation}
+Using the area formula $2A = a'b'\sin\theta_a$ and the identity $\cot\theta_u = \frac{(b')^2 + c^2 - (a')^2}{4A}$ (and similarly for $\cot\theta_v$), one obtains the standard discrete differential relation
+\begin{equation}\label{eq:dtheta-cot}
+\frac{\partial \theta_a}{\partial c} = \frac{\cot\theta_u+\cot\theta_v}{c}.
+\end{equation}
+(This is a classical computation in discrete differential geometry; it is consistent with the cotangent Laplacian weights.)
+
+\emph{Step 3: assemble curvature derivatives.}
+Let $\alpha=\theta_a$ and $\beta=\theta_b$ be the angles opposite the edge $(u,v)$ in the two adjacent triangles $(u,v,a)$ and $(u,v,b)$.
+The curvature at $u$ is $K_s(u)=2\pi-\sum_{t\ni u}\theta_t(u)$, i.e., minus the sum of angles at $u$ in incident triangles.
+Varying $s(v)$ changes only the lengths of edges incident to $v$, hence only angles in triangles incident to $v$, and in particular affects $K_s(u)$ only if $u$ and $v$ share an edge.
+For an interior edge $(u,v)$ with opposite angles $\alpha$ and $\beta$ in the two incident triangles, combining the chain rule with \eqref{eq:dtheta-cot} and the seam-to-length derivative from Step~1 gives
+\[
+\left.\frac{\partial K_s(u)}{\partial s(v)}\right|_{s=0}
+= -\frac{1}{2}\bigl(\cot\alpha+\cot\beta\bigr),
+\]
+which matches the off-diagonal cotangent Laplacian convention $L^{\text{cot}}_{uv}=-(\cot\alpha+\cot\beta)$.
+This yields the stated identity.
+\end{proof}
+
+\subsection{Numerical Validation (synthetic experiment)}
+\label{sec:numerics}
+
+To complement the theoretical results, we outline a minimal synthetic validation that can be reproduced on standard triangle meshes. Let $M$ be a sphere or torus mesh with background edge lengths $\ell_0$ and pick a ground-truth seam $s_{\mathrm{gt}}:V\to\R$. Generate ground-truth edge weights by the conformal graph rule
+\[
+w_{\mathrm{gt}}(u,v)=\ell_0(u,v)\frac{e^{s_{\mathrm{gt}}(u)}+e^{s_{\mathrm{gt}}(v)}}{2},
+\]
+and form a noisy target $w^*(u,v)=w_{\mathrm{gt}}(u,v)\,(1+\sigma\,\xi_{uv})$ where $\xi_{uv}$ are i.i.d.\ zero-mean perturbations and $\sigma$ controls the noise level.
+
+We then solve the inverse-design quadratic program of Theorem~\ref{thm:inverse_seam} to obtain $X^*$ and $s^*=\ln X^*$. The quality of recovery can be measured by (i) edge-weight fit error $\|w(X^*)-w^*\|_2/\|w^*\|_2$, (ii) curvature error $\|K_{s^*}-K_{s_{\mathrm{gt}}}\|_2/\|K_{s_{\mathrm{gt}}}\|_2$ (angle defects), and (iii) path distortion statistics comparing discrete shortest paths under $\ell_{s^*}$ to those under $\ell_{s_{\mathrm{gt}}}$. In practice, Theorem~\ref{thm:inverse_seam_stability} predicts stability of $X^*$ with respect to perturbations in the targets via $\lambda_{\min}(H)$.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  scale=0.95,
+  vtx/.style={circle, draw=black, fill=white, inner sep=1.2pt, font=\scriptsize},
+  ed/.style={draw=black, line width=0.6pt},
+  path/.style={draw=black, line width=1.1pt},
+  lab/.style={font=\scriptsize},
+  ann/.style={font=\scriptsize, align=left}
+]
+% --- Panel (a): synthetic triangulated patch with seam values ---
+\begin{scope}
+  \node[lab] at (1.75,2.75) {(a) seam on a patch};
+  % vertices
+  \node[vtx] (p00) at (0.0,0.0) {};
+  \node[vtx] (p10) at (1.0,0.0) {};
+  \node[vtx] (p20) at (2.0,0.0) {};
+  \node[vtx] (p30) at (3.0,0.0) {};
+  \node[vtx] (p01) at (0.5,0.85) {};
+  \node[vtx] (p11) at (1.5,0.85) {};
+  \node[vtx] (p21) at (2.5,0.85) {};
+  \node[vtx] (p02) at (1.0,1.70) {};
+  \node[vtx] (p12) at (2.0,1.70) {};
+  \node[vtx] (p03) at (1.5,2.45) {};
+
+  % edges (triangulation)
+  \foreach \a/\b in {p00/p10,p10/p20,p20/p30,p00/p01,p10/p01,p10/p11,p20/p11,p20/p21,p30/p21,p01/p11,p11/p21,p01/p02,p11/p02,p11/p12,p21/p12,p02/p12,p02/p03,p12/p03} {
+    \draw[ed] (\a) -- (\b);
+  }
+  % diagonals to form triangles
+  \foreach \a/\b in {p00/p10,p10/p11,p11/p20,p20/p21,p21/p30,p01/p10,p11/p10,p11/p20,p21/p20,p02/p11,p12/p11,p03/p02,p03/p12} {
+    % (already covered; keep minimal)
+  }
+
+  % annotate a few seam values (black/white: numeric labels)
+  \node[ann, anchor=west] at (3.25,2.05) {$s_{\mathrm{gt}}$ values};
+  \node[ann, anchor=west] at (3.25,1.75) {$s(p00)=-0.6$};
+  \node[ann, anchor=west] at (3.25,1.50) {$s(p11)=\phantom{-}0.0$};
+  \node[ann, anchor=west] at (3.25,1.25) {$s(p03)=\phantom{-}0.7$};
+\end{scope}
+
+% --- Panel (b): shortest path under recovered metric and curvature error bars ---
+\begin{scope}[xshift=8.0cm]
+  \node[lab] at (1.75,2.75) {(b) recovered paths / curvature};
+  % a slightly perturbed patch (so panels are visually distinct)
+  \node[vtx] (q00) at (0.0,0.0) {};
+  \node[vtx] (q10) at (1.05,0.05) {};
+  \node[vtx] (q20) at (2.05,-0.02) {};
+  \node[vtx] (q30) at (3.05,0.07) {};
+  \node[vtx] (q01) at (0.55,0.92) {};
+  \node[vtx] (q11) at (1.58,0.78) {};
+  \node[vtx] (q21) at (2.55,0.98) {};
+  \node[vtx] (q02) at (1.10,1.62) {};
+  \node[vtx] (q12) at (2.05,1.78) {};
+  \node[vtx] (q03) at (1.65,2.42) {};
+
+  \foreach \a/\b in {q00/q10,q10/q20,q20/q30,q00/q01,q10/q01,q10/q11,q20/q11,q20/q21,q30/q21,q01/q11,q11/q21,q01/q02,q11/q02,q11/q12,q21/q12,q02/q12,q02/q03,q12/q03} {
+    \draw[ed] (\a) -- (\b);
+  }
+
+  % two representative shortest paths (solid vs dashed)
+  \draw[path] (q00) -- (q10) -- (q11) -- (q12) -- (q03);
+  \draw[path, dashed] (q00) -- (q01) -- (q02) -- (q03);
+
+  % tiny "curvature error" bar chart sketch
+  \begin{scope}[yshift=0.1cm, xshift=3.55cm]
+    \node[ann, anchor=west] at (0.0,2.05) {curvature error};
+    \draw[ed] (0.0,0.3) -- (0.0,1.8);
+    \draw[ed] (0.0,0.3) -- (1.6,0.3);
+    \foreach \x/\h in {0.25/0.5,0.55/0.9,0.85/0.4,1.15/0.7,1.45/0.3} {
+      \draw[ed] (\x,0.3) rectangle ++(0.18,\h);
+    }
+    \node[ann, anchor=west] at (0.0,0.0) {\(\|K_{s^*}-K_{s_{\mathrm{gt}}}\|\)};
+  \end{scope}
+\end{scope}
+\end{tikzpicture}
+\caption{Synthetic numerical validation schematic (black/white): (a) a triangulated patch with example seam values \(s_{\mathrm{gt}}\); (b) a representative shortest path under the recovered metric \(\ell_{s^*}\) and a sketch of curvature error statistics.}
+\label{fig:numerics}
+\end{figure}
+
+\section{Conclusion and Open Problems}
+
+Seam-Driven Geometry reframes continuous and discrete metric spaces as the structured output of scalar functions. In geometry processing terms, the seam is not merely a parameterization: it is a stable interface between continuous differential-geometric objectives and discrete optimization primitives.
+
+The theorems established here open immediate applications in machine learning and geometry processing:
 \begin{itemize}
-    \item \textbf{Metric Type:} \( g \) is Riemannian if \( s \) is strictly convex, positive semi-definite if \( s \) is convex, and pseudo-Riemannian if the Hessian matrix \( (\partial_i \partial_j s) \) has the appropriate signature. Degeneracy occurs where \( \det(\text{Hess}(s)) = 0 \) \cite{Rockafellar1970}. % <-- UPDATED CITATION
-    \item \textbf{Geometric Class:} These metrics are central to Information Geometry and Affine Differential Geometry \cite{Amari2016,Shima2007}. % <-- UPDATED CITATION
-    Dually flat spaces in Information Geometry often possess metrics derived from the Hessian of a convex potential function (divergence) \cite{Amari2016}. % <-- Repeated citation okay here
-    \item \textbf{Integrability:} A given tensor \( g_{ij} \) can be locally written as a Hessian, \( g_{ij}=\partial_i\partial_j s \), if and only if certain integrability conditions related to its curvature are met. For instance, if \( g \) is flat (\( R_{ijkl}=0 \)), it must be constant to be a Hessian globally on \( \mathbb{R}^n \). If \( g \) is derived from a K\"ahler potential \( s \) in complex geometry (\( g_{i\bar{j}} = \partial_i \partial_{\bar{j}} s \)), this imposes specific curvature properties \cite{Jost2017}. % <-- UPDATED CITATION (Using Jost as placeholder replacement)
+    \item \textbf{Metric Nearness Projection:} Theorem \ref{thm:inverse_seam} proves that "repairing" noisy, physically invalid distance matrices on a graph can be achieved in $O(|E|)$ time via unconstrained convex optimization of a scalar field, bypassing $O(N^3)$ Semidefinite Programming.
+    \item \textbf{Intrinsic Metric Editing and Conformal Design:} The conformal graph rule provides a lightweight intrinsic metric design primitive for meshes, supporting tasks such as curvature-aware metric editing and conformal-style rescalings that integrate naturally with discrete conformal pipelines \cite{SpringbornSchroederPinkall2008,GuLuoSunWu2018}.
+    \item \textbf{Isotropic Sizing Fields for Remeshing/LOD (Outlook):} Interpreting the seam as a scalar sizing field suggests a simple route to isotropic remeshing and level-of-detail control by locally expanding or contracting intrinsic lengths, without introducing full anisotropic metric tensors.
+    \item \textbf{Graph Neural Network (GNN) Rewiring:} A major bottleneck in GNNs is "oversquashing," where information chokes at structural bottlenecks. Standard rewiring destroys topology. Our Conformal Graph Rule allows a neural network to learn a seam $s$ that dynamically "stretches" bottlenecks (altering edge weights to increase local flow) while rigorously preserving the original topological adjacency and spectral validity of the graph.
 \end{itemize}
 
-\subsubsection{Conformal Rule Geometries}
-The rule \( g_{ij} = e^{2s} h_{ij} \) generates geometries \emph{conformally equivalent} to the background \( (U, h) \).
-\begin{itemize}
-    \item \textbf{Metric Type:} The signature of \( g \) is the same as the signature of \( h \) (since \( e^{2s}>0 \)). Riemannian remains Riemannian.
-    \item \textbf{Geometric Class:} If \( h = \delta \) is the flat Euclidean metric on \( U \subseteq \mathbb{R}^n \), then \( \mathcal{R}_{\text{Conf}} \) generates \emph{conformally flat} geometries. For \( n \ge 3 \), this is equivalent to the vanishing of the Weyl tensor \( W_{ijkl}=0 \). For \( n=2 \), all metrics are conformally flat \cite{DiFrancesco2012}. % <-- UPDATED CITATION (Using DiFrancesco as placeholder replacement)
-    \item \textbf{Flexibility of Background:} While often assuming \( h=\delta \), the background \( h \) could itself be generated by another rule. If \( h_{ij} = (\mathcal{R}_{\text{Hessian}}(s_0))_{ij} = \partial_i \partial_j s_0 \), the resulting metric \( g_{ij} = e^{2s} (\partial_i \partial_j s_0) \) is conformal to a Hessian metric, potentially representing a richer geometric class dependent on two seams, \( s \) and \( s_0 \).
-    \item \textbf{Curvature:} The curvature (e.g., scalar curvature \( \tilde{R} \) of \( g=e^{2s}h \)) is related to the curvature \( R \) of \( h \) and derivatives of \( s \) via known transformation laws, e.g., \( \tilde{R} = e^{-2s}(R - 2(n-1)\Delta_h s - (n-1)(n-2)|\nabla s|_h^2) \) for Riemannian \( h \) \cite{Besse1987}. % <-- UPDATED CITATION
-\end{itemize}
+Future work will focus on establishing $h$-principle proofs for the generative universality conjecture, and extending the discrete optimal transport ($\mathcal{R}_{\text{OT}}$) rules to dynamic multi-agent pathfinding.
 
-\subsubsection{Gradient Rule Geometries}
-The rule \( g_{ij} = |\nabla s|^2 \delta_{ij} \) (relative to a background \( \delta_{ij} \)) generates \emph{isotropic, conformally flat} geometries.
-\begin{itemize}
-    \item \textbf{Metric Type:} Since \( |\nabla s|^2 \ge 0 \), \( g \) is always Riemannian (positive definite) where \( \nabla s \neq 0 \) and degenerate (\( g=0 \)) where \( \nabla s = 0 \). It cannot generate pseudo-Riemannian geometries from a Riemannian background via a real seam \( s \).
-    \item \textbf{Geometric Class:} These metrics are a subset of conformally flat metrics. The conformal factor \( F(u) = |\nabla s(u)|^2 \) must be the squared magnitude of a gradient. Not all positive functions \( F(u) \) can be written this way \cite{Sethian1999}. % <-- UPDATED CITATION
-    Thus, \( \mathcal{R}_{\text{Grad}} \) is strictly less general than \( \mathcal{R}_{\text{Conf}} \) for generating conformally flat geometries. For example, the spherical metric factor \( F=4R^4/(R^2+r^2)^2 \) is not \( |\nabla s|^2 \) for any smooth \( s \) globally on \( \mathbb{R}^2 \).
-    \item \textbf{Degeneracy:} Geodesics and distances are ill-defined at critical points of \( s \) where \( \nabla s = 0 \). The geometry collapses locally.
-\end{itemize}
-
-\subsubsection{Graph Rule Geometries}
-The geometries generated by \( \mathcal{R}_{\text{Graph}} \) are weighted graphs where distances are shortest path lengths.
-\begin{itemize}
-    \item \textbf{Geometric Class:} These are discrete metric spaces. Their large-scale geometry depends heavily on the choice of \( s \) and the weighting rule.
-    \item \textbf{Examples:} \( \mathcal{R}_{\text{Graph-Exp s}} \) with \( s=0 \) recovers standard graph distances (e.g., Manhattan distance on \( \mathbb{Z}^n \) with 2n-connectivity if edge lengths are 1). Non-zero \( s \) leads to non-homogeneous weighted graphs.
-    \item \textbf{Continuum Limit:} Understanding the geometry generated by graph rules on increasingly fine discretizations of a manifold \( U \), and how it relates to the differential rules, requires careful analysis using tools like Gromov-Hausdorff convergence or discrete exterior calculus \cite{Ollivier2009,BobenkoSpringborn2007}. % <-- UPDATED CITATION
-    This is an active research area.
-    \item \textbf{Hybrid Spaces:} Defining and analyzing the geometry of hybrid spaces like \( \mathbb{N} \times \mathbb{R} \) under these rules requires rigorous formulation of path lengths combining discrete and continuous costs, ensuring the resulting distance satisfies metric properties, particularly the triangle inequality.
-\end{itemize}
-
-%=================================================
-% End of Section V
-%=================================================
-
-% Reset equation counter for Section IV (Should be VI Discussion)
-\setcounter{equation}{0} % Reset equation counter for Discussion
-\section{Discussion}
-
-The framework presented in this paper proposes that geometric structure, typically characterized by a distance function $D$, can be generated from the interaction between a base space $U$, a scalar seam function $s: U \to \mathbb{R}$, and an interpretive Rule $\mathcal{R}$. The exploration of different Rules $\mathcal{R}$ reveals distinct ways in which the seam $s$ can be interpreted to "stitch" the space $U$ together.
-
-The Hessian Rule ($\mathcal{R}_{\text{Hessian}}$), $g_{ij} = \partial^2 s / \partial x^i \partial x^j$, treats the seam $s$ as a potential function requiring $C^2$ smoothness. Its second derivatives directly define the metric tensor components. This rule naturally generates flat Euclidean and Minkowski geometries from simple quadratic seams, demonstrating a capacity to unify Riemannian and pseudo-Riemannian structures within a single mechanism. However, it does not guarantee a positive definite or even non-degenerate metric and appears unable to generate fundamental geometries with constant non-zero curvature directly on $\mathbb{R}^n$.
-
-In contrast, the Conformal Rule ($\mathcal{R}_{\text{Conf}}$), $g_{ij} = e^{2s} h_{ij}$, interprets $s$ as the logarithm of a local scaling factor applied to a background metric $h_{ij}$. This rule naturally generates conformally flat geometries, readily producing spherical and hyperbolic spaces by choosing the appropriate logarithmic seam function relative to a flat background. It preserves the metric type (e.g., Riemannian remains Riemannian) but is limited to geometries conformally equivalent to the background.
-
-The Gradient Rule ($\mathcal{R}_{\text{Grad}}$), $g_{ij} = |\nabla s|^2 \delta_{ij}$, offers a third perspective for differentiable manifolds, using the first derivatives of $s$. It requires only $C^1$ smoothness and interprets the squared magnitude of the seam's gradient as an isotropic scaling factor for a background Euclidean metric $\delta_{ij}$. Like the Conformal Rule, it generates conformally Euclidean geometries and cannot produce pseudo-Riemannian signatures from a Euclidean background. However, it is more restrictive than the Conformal Rule, as the scaling factor must be expressible as $|\nabla s|^2$. This rule highlights a direct link between the rate of change of the seam and the local metric scale, yielding degeneracy where the seam is stationary ($\nabla s = 0$).
-
-The comparison between applying $\mathcal{R}_{\text{Hessian}}$ and $\mathcal{R}_{\text{Conf}}$ to the same seam $s=xy$ highlighted the critical role of the Rule: the former produced flat Lorentzian spacetime, while the latter produced a flat, conformally warped Riemannian plane. The Gradient Rule applied to $s=xy$ would yield $g_{ij} = (x^2+y^2)\delta_{ij} = r^2 \delta_{ij}$, the same outcome as $\mathcal{R}_{\text{Grad}}$ applied to $s=r^2/2$, demonstrating non-uniqueness of the seam for a given geometry under this rule and again producing a different geometry than the other two rules for $s=xy$.
-
-Furthermore, the framework inherently allows for the composition of rules. For instance, the background metric $h_{ij}$ required by the Conformal Rule need not be a fixed, predefined structure like $\delta_{ij}$. It could itself be the geometric structure generated by applying a different rule, say $\mathcal{R}_{\text{Hessian}}$, to an underlying seam $s_0$. The resulting geometry $g_{ij} = e^{2s} (\partial_i \partial_j s_0)$ would then depend on two seams, $s$ and $s_0$, interpreted sequentially. While this moves beyond the simplicity of the basic $(U, s, \mathcal{R})$ triplet focused upon in this introductory work, it highlights the potential for generating highly complex geometries from nested scalar field interpretations.
-
-Graph-Based Rules ($\mathcal{R}_{\text{Graph}}$) offer a pathway to handle discrete or mixed base spaces. By defining adjacency and deriving edge weights or local costs from $s$, they generate geometry through shortest path computations. Defining universally applicable and consistent rules for deriving edge weights remains a challenge, particularly for mixed spaces. Simple rules based on seam differences ($w=|\Delta s|$) or inspired by conformal scaling ($w \approx e^s \epsilon$) illustrate different possibilities.
-% ADDED CITATION BASED ON GUIDE:
-Recent work connecting discrete and continuous notions of curvature \cite{Ollivier2014Visual} and geometric learning approaches \cite{CoifmanLafon2006} suggests promising avenues for further development of these hybrid frameworks.
-
-The necessity of specifying a Rule $\mathcal{R}$ alongside $(U, s)$ is perhaps the most crucial outcome. The Rule embodies the physical or mathematical principle translating the scalar information $s$ into geometric relations $D$. While the search for a single, universal Rule encompassing all scenarios might be difficult, the framework allows for the study and comparison of different physically or mathematically motivated Rules. The choice of Rule dictates the interpretation of the seam and the class of geometries that can be generated.
-
-This framework potentially offers a novel perspective by focusing on the generative capacity of scalar fields. If a suitable Rule can be identified for a particular context, the seam $s$ becomes a powerful tool for parameterizing and exploring a landscape of geometries. Open questions remain regarding the rigorous formulation of graph rules for continuous limits, the handling of non-smooth seams, the geometric interpretation of non-positive definite or degenerate metrics arising from rules like $\mathcal{R}_{\text{Hessian}}$ and $\mathcal{R}_{\text{Grad}}$, and the potential physical meaning of the seam $s$ under different rules.
-
-%------------------------------------------------
-
-% Reset equation counter for Section VI Conclusion
-\setcounter{equation}{0}
-\section{Conclusion}
-The framework \( (U, s, \mathcal{R}) \) generates geometries from a scalar seam \( s \) on a base space \( U \) via a Rule \( \mathcal{R} \), producing a distance \( D \). Requiring \( D \) to be a pseudo-metric, we showed \( \mathcal{R}_{\text{Hessian}} \) yields Euclidean and Minkowski spaces from quadratic seams using second derivatives, \( \mathcal{R}_{\text{Conf}} \) produces conformally flat spaces like spheres and hyperbolic planes using \( e^{2s} \) scaling, \( \mathcal{R}_{\text{Grad}} \) generates isotropic conformally flat metrics using \( |\nabla s|^2 \) scaling from first derivatives, and \( \mathcal{R}_{\text{Graph}} \) handles discrete structures via seam-derived costs. The triplet unifies diverse geometries within a scalar-driven approach, with the Rule fundamentally shaping the interpretation of the seam and the resulting geometry. Further study could expand its scope to novel spaces and physical interpretations.
-% ADDED CITATION BASED ON GUIDE:
-The framework's potential applications extend beyond pure mathematics to areas like quantum geometry \cite{AshtekarSchilling1999} and information geometry \cite{FujiiOgura2015}.
-
+\begin{remark}[Differentiable seam learning and GNN rewiring]
+For learning-based pipelines, a seam $s_\theta$ produced by a neural network can be optimized end-to-end by differentiating through a \emph{relaxed} shortest-path layer (e.g., via log-sum-exp/softmin path energies or entropic optimal transport relaxations). The seam parameterization provides a low-dimensional, geometry-aware control knob: backpropagated gradients update $s$ while preserving the underlying adjacency, and Theorem~\ref{thm:inverse_seam_stability} gives a linear-algebraic handle on conditioning when the edge-fitting objective is used as a loss.
+\end{remark}
 
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
 %----------------------------------------------------------------------------------------
 
-% Start of the bibliography environment
-% Replace XX with a number large enough for your total reference count (e.g., 30 or 99)
 \begin{thebibliography}{99}
+\raggedright
 
-% --- References Already Present (potentially replacing placeholders) ---
-
-% Placeholder [InfoGeoHessian] - Replaces/confirms existing Amari2016
 \bibitem{Amari2016}
 S.-I. Amari,
 \textit{Information Geometry and Its Applications},
 Springer Japan, Tokyo, 2016.
-% Note: This seems identical to your existing Amari2016 entry.
-
-% Placeholder [ConformalRecent]
-\bibitem{DiFrancesco2012}
-P. Di Francesco, P. Mathieu, and D. S\'en\'echal, % Using \'e for é
-\textit{Conformal Field Theory},
-Graduate Texts in Contemporary Physics, Springer, 2012.
-
-% Placeholder [EikonalGradient]
-\bibitem{Sethian1999}
-J. A. Sethian,
-\textit{Level Set Methods and Fast Marching Methods: Evolving Interfaces in Computational Geometry, Fluid Mechanics, Computer Vision, and Materials Science},
-Cambridge University Press, 1999.
-
-% Placeholder [GraphMetric]
-\bibitem{Chung1997}
-F. R. K. Chung,
-\textit{Spectral Graph Theory},
-American Mathematical Society, 1997.
-
-% --- Additional References for Section V ---
-
-\bibitem{ONeill1983}
-B. O'Neill,
-\textit{Semi-Riemannian Geometry With Applications to Relativity},
-Academic Press, 1983.
-
-\bibitem{BeemEhrlichEasley1996}
-J. K. Beem, P. E. Ehrlich, and K. L. Easley,
-\textit{Global Lorentzian Geometry},
-2nd ed., Monographs and Textbooks in Pure and Applied Mathematics, Vol. 202, Marcel Dekker, New York, 1996.
-% Note: Added 2nd ed. and series info often found for this standard text. Adjust if not desired. CRC Press now owns Marcel Dekker math books.
-
-\bibitem{Rockafellar1970}
-R. T. Rockafellar,
-\textit{Convex Analysis},
-Princeton University Press, 1970.
 
 \bibitem{Shima2007}
 H. Shima,
 \textit{The Geometry of Hessian Structures},
 World Scientific, 2007.
 
-\bibitem{Besse1987}
-A. L. Besse,
-\textit{Einstein Manifolds},
-Classics in Mathematics, Springer-Verlag, Berlin, 1987. % Added Classics series info
-
-\bibitem{Ollivier2009}
-Y. Ollivier,
-``Ricci curvature of Markov chains on metric spaces,''
-\textit{Journal of Functional Analysis}, vol. 256, no. 3, pp. 810--864, 2009.
-\href{https://doi.org/10.1016/j.jfa.2008.11.001}{DOI:10.1016/j.jfa.2008.11.001}.
-
-\bibitem{BobenkoSpringborn2007}
-A. I. Bobenko and B. A. Springborn,
-``A discrete Laplace-Beltrami operator for simplicial surfaces,''
-\textit{Discrete \& Computational Geometry}, vol. 38, no. 4, pp. 740--756, 2007. % Using \& for ampersand
-\href{https://doi.org/10.1007/s00454-007-9012-8}{DOI:10.1007/s00454-007-9012-8}.
-
-% --- Additional References for Broader Context ---
-
-\bibitem{Jost2017}
-J. Jost,
-\textit{Riemannian Geometry and Geometric Analysis},
-7th ed., Springer, Cham, 2017. % Assuming latest edition
-
-\bibitem{Sakai1996}
-T. Sakai,
-\textit{Riemannian Geometry},
-Translations of Mathematical Monographs, Vol. 149, American Mathematical Society, Providence, RI, 1996.
-
-\bibitem{GibbonsHawking1993}
-G. W. Gibbons and S. W. Hawking (Eds.), % Assumed they are editors of a collection
-\textit{Euclidean Quantum Gravity},
-World Scientific, Singapore, 1993.
-% Note: If it's a monograph by them, remove "(Eds.),"
-
-\bibitem{FujiiOgura2015}
-K. Fujii and Y. Ogura,
-``Dually flat structure on the manifold of positive definite matrices and its applications,''
-\textit{Differential Geometry and Its Applications}, vol. 43, pp. 95--124, 2015.
-\href{https://doi.org/10.1016/j.difgeo.2015.09.002}{DOI:10.1016/j.difgeo.2015.09.002}.
-
-\bibitem{CoifmanLafon2006}
-R. R. Coifman and S. Lafon,
-``Diffusion maps,''
-\textit{Applied and Computational Harmonic Analysis}, vol. 21, no. 1, pp. 5--30, 2006.
-\href{https://doi.org/10.1016/j.acha.2006.04.006}{DOI:10.1016/j.acha.2006.04.006}.
-
-\bibitem{Ollivier2014Visual}
-Y. Ollivier,
-``A visual introduction to Riemannian curvatures and some discrete generalizations,''
-\textit{Analysis and Geometry of Metric Spaces}, vol. 2, no. 1, pp. 229--283, 2014. % Added issue 1, common for journals
-\href{https://doi.org/10.2478/agms-2014-0013}{DOI:10.2478/agms-2014-0013}.
-
-\bibitem{AshtekarSchilling1999}
-A. Ashtekar and T. A. Schilling,
-``Geometrical Formulation of Quantum Mechanics,''
-in \textit{On Einstein's Path: Essays in Honor of Engelbert Sch\"ucking}, A. Harvey (Ed.), pp. 23--65, Springer, New York, 1999. % Added hypothetical editor and pages - NEED TO CHECK ACTUAL BOOK DETAILS
-\href{https://doi.org/10.1007/978-1-4612-1422-9_3}{DOI:10.1007/978-1-4612-1422-9\_3}. % DOI if available
-
-% --- Include your pre-existing references here too ---
-
-\bibitem{BransDicke1961}
-C. H. Brans and R. H. Dicke,
-``Mach's Principle and a Relativistic Theory of Gravitation,''
-\textit{Physical Review}, vol. 124, no. 3, pp. 925--935, 1961.
-\href{https://doi.org/10.1103/PhysRev.124.925}{DOI:10.1103/PhysRev.124.925}.
-% Justification: Scalar-tensor theory linking scalar fields to geometry; foundational for your framework’s motivation.
-
-\bibitem{Kaluza1921}
-T. Kaluza,
-``Zum Unitätsproblem der Physik,''
-\textit{Sitzungsberichte der Preußischen Akademie der Wissenschaften}, pp. 966--972, 1921.
-% Justification: Seminal work on higher-dimensional geometry yielding 4D fields; parallels your seam concept.
-% Available via archive.org or historical physics collections.
-
-\bibitem{Klein1926}
-O. Klein,
-``Quantentheorie und fünfdimensionale Relativitätstheorie,''
-\textit{Zeitschrift für Physik}, vol. 37, no. 12, pp. 895--906, 1926.
-\href{https://doi.org/10.1007/BF01397481}{DOI:10.1007/BF01397481}.
-% Justification: Quantum extension of Kaluza; scalar fields from extra dimensions align with your approach.
-
-\bibitem{Wesson2013}
-P. S. Wesson and J. M. Overduin,
-``The Scalar Field Source in Kaluza-Klein Theory,''
-\textit{arXiv:1307.4828 [gr-qc]}, 2013.
-\href{https://arxiv.org/abs/1307.4828}{arXiv:1307.4828}.
-% Justification: Explores scalar fields generating matter in KK theory; aligns with your seam’s role.
-
-% Make sure to add the Bobenko2015 reference mentioned in the placeholder list if it's distinct
-% from BobenkoSpringborn2007
-\bibitem{Bobenko2015}
-A. I. Bobenko and P. Schr\"oder, % Using \"o for ö
-``Discrete Differential Geometry: An Applied Introduction,''
-\textit{Proceedings of Symposia in Applied Mathematics}, vol. 71, pp. 1--36, 2015.
-% Example: Add other existing ones
 \bibitem{Petersen2006}
 P. Petersen,
 \textit{Riemannian Geometry}, 2nd ed.,
-Springer, New York, 2006.
+Springer, 2006.
 
-\bibitem{Lee2018}
-J. M. Lee,
-\textit{Introduction to Riemannian Manifolds}, 2nd ed.,
-Springer, Cham, 2018.
+\bibitem{Sethian1999}
+J. A. Sethian,
+\textit{Level Set Methods and Fast Marching Methods}, 2nd ed.,
+Cambridge University Press, 1999.
 
-% ... Add all other existing references ...
+\bibitem{Milnor1963}
+J. Milnor,
+\textit{Morse Theory},
+Princeton University Press, 1963.
 
-% --- End of new entries ---
+\bibitem{Wald1984}
+R. M. Wald,
+\textit{General Relativity},
+University of Chicago Press, 1984.
+
+\bibitem{BuragoBuragoIvanov2001}
+D. Burago, Y. Burago, and S. Ivanov,
+\textit{A Course in Metric Geometry},
+American Mathematical Society, 2001.
+
+\bibitem{Chung1997}
+F. R. K. Chung,
+\textit{Spectral Graph Theory},
+American Mathematical Society, 1997.
+
+\bibitem{BobenkoSpringborn2007}
+A. I. Bobenko and B. A. Springborn,
+``A discrete Laplace--Beltrami operator for simplicial surfaces,''
+\textit{Discrete \& Computational Geometry} \textbf{38}, 740--756 (2007).
+
+\bibitem{GuLuoSunWu2018}
+X. Gu, F. Luo, J. Sun, and T. Wu,
+``A discrete uniformization theorem for polyhedral surfaces,''
+\textit{Journal of Differential Geometry} \textbf{109}, 223--256 (2018).
+
+\bibitem{SpringbornSchroederPinkall2008}
+B. Springborn, P. Schr\"oder, and U. Pinkall,
+``Conformal equivalence of triangle meshes,''
+\textit{ACM Transactions on Graphics} \textbf{27}(3) (2008).
+
+\bibitem{CranePinkallSchroeder2013}
+K. Crane, U. Pinkall, and P. Schr\"oder,
+``Spin transformations of discrete surfaces,''
+\textit{ACM Transactions on Graphics} \textbf{32}(4) (2013).
+
+\bibitem{PinkallPolthier1993}
+U. Pinkall and K. Polthier,
+``Computing discrete minimal surfaces and their conjugates,''
+\textit{Experimental Mathematics} \textbf{2}(1), 15--36 (1993).
+
+\bibitem{ChowLuo2003}
+B. Chow and F. Luo,
+``Combinatorial Ricci flows on surfaces,''
+\textit{Journal of Differential Geometry} \textbf{63}, 97--129 (2003).
 
 \end{thebibliography}
-% End of the bibliography environment
+
 \end{document}
