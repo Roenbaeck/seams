@@ -22,7 +22,7 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{mathpazo}
-\usepackage{fontenc}
+\usepackage[T1]{fontenc}
 \linespread{1.05}
 \usepackage{microtype}
 \usepackage{bm}
@@ -30,7 +30,8 @@
 \usetikzlibrary{positioning, shapes.geometric}
 \usetikzlibrary{arrows.meta}
 \usepackage{graphicx}
-\usepackage{babel}
+\usepackage{flafter} % prevent floats from appearing before their definition
+\usepackage[english]{babel}
 \usepackage{geometry}
 \usepackage{caption}
 \usepackage{booktabs}
@@ -95,7 +96,7 @@
 \textsc{Lars Rönnbäck}
 \\ %
 \normalsize Stockholm University \\
-\normalsize \href{mailto:lars.ronnback@anchormodeling.com}{lars@uptochange.com}
+\normalsize \href{mailto:lars@uptochange.com}{lars@uptochange.com}
 \\ %
 }
 \date{}
@@ -119,12 +120,13 @@
 %----------------------------------------------------------------------------------------
 
 \section{Introduction}
+\label{sec:introduction}
 
 Standard presentations of geometry begin with a metric or a manifold structure postulated \emph{a priori}. Here we emphasize a complementary, constructive viewpoint: start with a base space \(U\) and a scalar field \(s\) (the \emph{seam}), then let an explicit Rule \(\mathcal{R}\) produce the geometric data. 
 
 In smooth differential geometry, this scalar-first perspective provides an elegant synthesis. Conformal metrics, Information Geometry (Hessian metrics), optimal transport (Kantorovich potentials), and Morse handle-bodies can all be viewed as the output of specific local operations on a scalar field. However, the true utility of this formulation arises in computational and applied mathematics. On discrete meshes, manipulating full tensor fields is algorithmically cumbersome and numerically unstable. By reducing metric generation to the evaluation of a scalar seam, highly complex geometric problems (like metric projection or feature-aware routing) can be reduced to fast, stable scalar optimization.
 
-In this paper, we formally define the Seam-Rule framework and demonstrate its utility. Section II establishes the formal axioms and composition laws for Rules. Section III catalogs the standard continuous and discrete Rules. Section IV shows how continuous theorems (Gauss-Bonnet) are cleanly articulated in this language. Finally, Section V provides the computational climax: proving that discrete seam-generated graphs rigorously approximate continuous geometries, preserve curvature via the cotangent Laplacian, and enable strictly convex inverse metric design.
+In this paper, we formally define the Seam-Rule framework and demonstrate its utility. Section~\ref{sec:framework} establishes the formal axioms and composition laws for Rules, and Section~\ref{sec:repertoire} catalogs standard continuous and discrete Rules. This axiomatic layer is intended primarily as a unifying \emph{language} for organizing constructions across settings (and can be skimmed on a first, results-focused read); the main technical contributions are the discrete approximation, curvature, and inverse-design theorems in Section~\ref{sec:discrete-geometry}. Section~\ref{sec:continuous-geometry} illustrates how familiar continuous identities (e.g., Gauss--Bonnet) are cleanly expressed in the seam-rule viewpoint. Finally, Section~\ref{sec:discrete-geometry} provides the computational core: proving that discrete seam-generated graphs rigorously approximate continuous geometries, preserve curvature via the cotangent Laplacian, and enable strictly convex inverse metric design.
 
 \paragraph{Contributions (geometry processing view).}
 Our contributions are geared toward mesh and graph processing, where one seeks parameterizations that are easy to optimize, differentiate, and analyze.
@@ -144,7 +146,7 @@ More broadly, discrete-to-continuum limits are a recurring theme in discrete dif
 
 Our intent is not to claim novelty of using scalar fields per se, but to formalize a general "seam $\to$ rule $\to$ geometry" interface that accommodates multiple continuous and discrete constructions under one axiomatic umbrella, and to highlight algorithmic consequences of a particular discrete edge-length rule: a quantitative discrete-to-continuum guarantee for the resulting shortest-path metric, a curvature sensitivity identity, and a convex inverse-design formulation for fitting target edge weights.
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\linewidth]{figures/fig1_seam_curvature.pdf}
 \caption{A small Delaunay mesh colored by the seam field $s$ (left) and the induced discrete Gaussian curvature $K_s$ (angle defect) computed from the seam-generated intrinsic edge lengths $\ell_s(u,v)=\ell_0(u,v)\tfrac{e^{s(u)}+e^{s(v)}}{2}$ (right; boundary vertices masked to avoid boundary angle-defect dominance).}
@@ -152,6 +154,7 @@ Our intent is not to claim novelty of using scalar fields per se, but to formali
 \end{figure}
 
 \section{Framework: Seams, Rules, and Composition}
+\label{sec:framework}
 
 Let \(U\) be a paracompact Hausdorff space (or discrete set) equipped with a local background structure \(\mathcal{T}_U\) (e.g., a differentiable atlas, a background metric $h$, or a graph adjacency).
 
@@ -184,6 +187,7 @@ Locality follows immediately from the composition of restriction maps: $\mathcal
 \end{proof}
 
 \section{The Repertoire of Rules}
+\label{sec:repertoire}
 
 The generative power of the framework relies on specific definitions of $\mathcal{R}$. 
 
@@ -232,10 +236,23 @@ On a graph $G=(V,E)$ with background edge lengths $\ell_0(u,v)$, the seam $s: V 
     $w(u,v) = \ell_0(u,v) \frac{|\nabla s|(u) + |\nabla s|(v)}{2}$
 \end{enumerate}
 
+\begin{remark}[Arithmetic mean vs. the classical geometric mean]
+In much of the discrete conformal literature on triangle meshes, a common vertex-based conformal scaling takes the \emph{geometric mean} of endpoint factors, i.e.
+\[
+\ell^{\mathrm{geom}}_{s}(u,v)=\ell_0(u,v)\,\exp\!\left(\tfrac12\bigl(s(u)+s(v)\bigr)\right)=\ell_0(u,v)\,\sqrt{e^{s(u)}e^{s(v)}}.
+\]
+By contrast, our Conformal Graph Rule uses the \emph{arithmetic mean}
+\[
+\ell^{\mathrm{arith}}_{s}(u,v)=\ell_0(u,v)\,\tfrac12\bigl(e^{s(u)}+e^{s(v)}\bigr).
+\]
+We deviate from the geometric-mean convention intentionally. The arithmetic mean is exactly the endpoint trapezoidal quadrature for the conformal line element $\int e^{s}\,\diff \ell_0$ (Lemma~\ref{lem:trap}), and it is the choice that makes inverse edge-weight fitting \emph{quadratic} in the variables $X_u:=e^{s(u)}$ (Theorem~\ref{thm:inverse_seam}), yielding a strictly convex QP on non-bipartite graphs. In other words, the arithmetic rule is selected for its discrete-to-continuum consistency and its algorithmic convexity properties, not because it is the only possible discrete conformal scaling.
+\end{remark}
+
 These constructions are closely related to discrete conformal geometry and conformal parameterizations of triangle meshes; see, e.g., \cite{SpringbornSchroederPinkall2008,GuLuoSunWu2018}. They also connect to circle-packing/combinatorial Ricci flow viewpoints on discrete conformal scaling \cite{ChowLuo2003} and to related conformal-type transformations such as spin transformations \cite{CranePinkallSchroeder2013}.
 
 
 \section{Continuous Geometry: Curvature Identities}
+\label{sec:continuous-geometry}
 
 Framing continuous geometry in terms of seams often reduces complex tensor algebra to elegant scalar identities.
 
@@ -257,6 +274,7 @@ Positive definiteness is an open condition: since \(q\mapsto g_q\) varies smooth
 Beyond curvature identities, it is natural to ask whether composed scalar rules can approximate \emph{arbitrary} Riemannian metrics in a suitable topology. We record one such universality conjecture as an explicit open problem in the conclusion.
 
 \section{Discrete Geometry and Computation}
+\label{sec:discrete-geometry}
 
 The true advantage of the seam framework is algorithmic. In this climax section, we prove that discrete graph rules strictly approximate continuous geometries, preserve curvature, and enable uniquely solvable inverse-design problems.
 
@@ -304,7 +322,7 @@ Then the conformal length satisfies
 where $C_s$ depends on $\sup_M |\nabla^2 (e^{s})|$ (equivalently on $\sup_M(|\nabla s|,|\nabla^2 s|)$).
 \end{lemma}
 \begin{proof}
-This is the standard trapezoidal error estimate for $C^2$ functions: if $f(t):=e^{s(\gamma(t))}$, then $f\in C^2$ and the error on an interval of length $\ell$ is bounded by $\frac{\ell^3}{12}\sup|f''|$. Boundedness of $f''$ follows from $s\in C^2$ and compactness of $M$.
+Since $\gamma$ is unit-speed in the background metric $g_0$, the parameter $t$ is exactly $g_0$-arc length along $\gamma$, i.e.\ $\diff t=\diff\ell_0$ on the segment. The claim is then the standard trapezoidal error estimate for $C^2$ functions: if $f(t):=e^{s(\gamma(t))}$, then $f\in C^2$ and the error on an interval of length $\ell$ is bounded by $\frac{\ell^3}{12}\sup|f''|$. Boundedness of $f''$ follows from $s\in C^2$ and compactness of $M$.
 \end{proof}
 
 \begin{theorem}[Discrete-to-continuum limit via correspondences]\label{thm:gh-limit}
@@ -365,7 +383,7 @@ Thus, as in Theorem~\ref{thm:gh-limit}, the leading $O(h_n)$ contribution to the
 Taking the infimum over vertex paths gives $d_n(u,v)\le d_g(x,y)+C_1 h_n$; conversely, comparing any discrete shortest path to the continuous geodesic and using the same two lemmas yields $d_g(x,y)\le d_n(u,v)+C_2 h_n$. Combining the inequalities gives the stated uniform $O(h_n)$ bound.
 \end{proof}
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.75\linewidth]{figures/fig2_convergence.pdf}
 \caption{Log--log convergence plot for the discrete shortest-path metric: mean $|d_n-d_g|$ over fixed test pairs versus $h$ (mean Euclidean edge length) on a sequence of quasi-uniform triangulations. A fit over the pre-plateau regime yields slope close to $1$ (dashed), consistent with the $O(h)$ rate driven by the spanner approximation; the dotted line shows a slope-$1$ reference.}
@@ -374,6 +392,8 @@ Taking the infimum over vertex paths gives $d_n(u,v)\le d_g(x,y)+C_1 h_n$; conve
 
 \subsection{Algorithmic Stability and Inverse Design}
 
+We emphasize a basic but important distinction in what follows: the inverse-design problem we solve is posed at the level of \emph{local geometry} (edge weights / discrete line elements). The resulting \emph{global} metric space structure is then induced as the shortest-path distance on the weighted graph. In particular, we do not fit all-pairs distances directly.
+
 \begin{theorem}\label{thm:inverse_seam}
 Let $G = (V, E)$ be a triangulated mesh (or any connected, non-bipartite graph) with background lengths $\ell_0(e) > 0$. Given an arbitrary, potentially noisy or invalid set of target edge weights $w^*(e) > 0$, the optimal seam $s^*$ minimizing the squared error under the Conformal Graph Rule:
 \begin{equation}
@@ -381,6 +401,10 @@ Let $G = (V, E)$ be a triangulated mesh (or any connected, non-bipartite graph) 
 \end{equation}
 can be found by solving a strictly convex quadratic program in the variables $X_u := e^{s(u)} > 0$.
 \end{theorem}
+
+\begin{remark}[Local targets vs. induced metric]
+The targets $w^*(e)$ are edge-wise measurements and need not satisfy any global consistency constraints such as the triangle inequality. Once an optimizer $X^*$ (hence seam $s^*$) is found, it defines seam-generated edge weights $w_{s^*}(e)$, and these weights induce a bona fide shortest-path metric $D_{s^*}$ on $V$ by construction. Thus the QP performs a projection at the level of local edge geometry, with the global metric obtained as the induced path metric.
+\end{remark}
 \begin{proof}
 Under the substitution $X_u = e^{s(u)}$, the energy $\mathcal{E}(X)$ becomes a quadratic function $\frac{1}{2}X^T H X - C^T X + K$. The Hessian $H$ of this polynomial has diagonal entries $\sum_{v\sim u} \ell_0^2(u,v)/4$ and off-diagonal entries $\ell_0^2(u,v)/4$. This matrix $H$ is exactly proportional to the \emph{signless Laplacian} $Q = D + A$ of the weighted graph.
 
@@ -389,6 +413,8 @@ The spectral characterization we use here is classical: for a connected graph, t
 
 \begin{remark}[Positivity constraint]
 Strict convexity holds for the quadratic objective in $X$, but the change of variables imposes $X_u>0$. Thus the natural optimization problem is a strictly convex QP with simple positivity constraints (or an unconstrained problem if one works directly in $s$, where the objective is generally \emph{not} quadratic).
+If the unconstrained quadratic minimizer $X^*=H^{-1}b$ fails to satisfy $X^*>0$ (which can occur for severely distorted targets $w^*$), then the appropriate object is the constrained optimizer of the convex QP with bounds $X\ge 0$ (or $X\ge \varepsilon$ for a small floor), obtained from the KKT system or an active-set/NNLS-type solve.
+Geometrically, an active bound $X_u\downarrow 0$ corresponds to driving $s(u)=\log X_u\to -\infty$, i.e., forcing the conformal factor at $u$ to collapse. Under our \emph{arithmetic-mean} edge rule, this does not automatically send all incident edge lengths to zero (since $\ell_s(u,v)=\ell_0(u,v)\tfrac12(X_u+X_v)\to \ell_0(u,v)\tfrac12 X_v$ when $X_u\to 0$), but it does make the vertex $u$ contribute negligibly to the local scaling and indicates a degenerate/singular limit of the seam-generated metric around $u$.
 \end{remark}
 
 \begin{theorem}[Gauge fixing and conditioning for inverse design]\label{thm:inverse_seam_stability}
@@ -416,6 +442,7 @@ For stability, differentiate the optimality condition: $(H+\delta H)(X^*+\delta 
 
 \begin{remark}[Interiority vs.\ positivity constraints]\label{rem:inverse-interior}
 Theorem~\ref{thm:inverse_seam_stability} is stated for the unconstrained quadratic minimizer. The same conditioning estimate applies to the positivity-constrained QP in Theorem~\ref{thm:inverse_seam} whenever the optimizer lies in the interior of the feasible set (i.e., $X_u^*>0$ for all $u$), since then the KKT system reduces to $HX=b$. If active positivity constraints occur, the solution map is still Lipschitz on regions of constant active set, with an analogous bound involving the reduced Hessian.
+From a modeling perspective, persistent active constraints (many vertices with $X_u$ pinned at the boundary) are a diagnostic that the targets $w^*$ are far from the realizable set of seam-generated edge weights, or that additional regularization/prior information on $s$ is needed to avoid metric degeneracy.
 \end{remark}
 
 \subsection{Curvature Preservation}
@@ -492,11 +519,11 @@ We generate graphs with $n \in \{10^2, 10^3, 10^4\}$ vertices and assign a groun
 
 In practice, our Python/NumPy/SciPy implementation solves the unconstrained normal equations for the quadratic objective via a sparse direct solve (with a small ridge for numerical stability), with a nonnegativity-constrained least-squares fallback when needed (SciPy's \texttt{nnls} for small $n$ and \texttt{lsq\_linear} with bounds for large $n$). On a typical laptop, the core inverse-design solve (excluding shortest-path evaluation) takes about $0.04$ seconds for $n=10^4$.
 
-Table~\ref{tab:validation} summarizes the results. The optimization consistently denoises the metric: for instance, at $n=10^4$ and $\sigma=0.10$, the noisy weights deviate from the truth by $9.9\%$, while the recovered weights $w_{\mathrm{opt}}$ reduce this error to $5.3\%$. This denoising effect extends to the induced shortest-path metric, where the mean relative path error drops from $5.0\%$ (noisy) to $2.3\%$ (recovered). Furthermore, finite-difference checks confirm that the analytical derivatives and Hessian-vector products match numerical finite differences to high precision (worst relative errors $\sim 10^{-6}$ and $\sim 10^{-9}$ over the sweep), validating the exactness of the quadratic formulation.
+Table~\ref{tab:validation} summarizes the results. The optimization consistently denoises the metric: for instance, at $n=10^4$ and $\sigma=0.10$, the noisy weights deviate from the truth by $9.9\%$, while the recovered weights $w_{\mathrm{opt}}$ reduce this error to $5.3\%$. This denoising effect extends to the induced shortest-path metric, where the mean relative path error drops from $5.0\%$ (noisy) to $2.3\%$ (recovered). The reported $R^2$ values are consistently high across the sweep, supporting the proof-of-concept that the seam parameterization can explain a large fraction of the variance in the target edge weights even under noise. Furthermore, finite-difference checks confirm that the analytical derivatives and Hessian-vector products match numerical finite differences to high precision (worst relative errors $\sim 10^{-6}$ and $\sim 10^{-9}$ over the sweep), validating the exactness of the quadratic formulation.
 
 Finally, we empirically visualize the predicted $O(h)$ convergence of the discrete shortest-path metric to the continuous conformal metric (Theorems~\ref{thm:gh-limit}--\ref{thm:oh-bound}) by comparing discrete distances on quasi-uniform triangulations against a high-resolution grid-based approximation of the continuous geodesic distance. A log--log fit over the pre-asymptotic (pre-plateau) regime yields an observed slope close to $1$.
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.78\linewidth]{figures/fig3_inverse_design.pdf}
 \caption{Inverse-design denoising: histogram of relative edge-weight error with respect to ground truth, comparing noisy targets $w^*$ to recovered weights $w_{\mathrm{opt}}$ obtained from the strictly convex inverse-design solve.}
@@ -535,10 +562,12 @@ Seam-Driven Geometry reframes continuous and discrete metric spaces as the struc
 
 The theorems established here open immediate applications in machine learning and geometry processing:
 \begin{itemize}
-    \item \textbf{Metric Nearness Projection:} Theorem \ref{thm:inverse_seam} proves that "repairing" noisy, physically invalid distance matrices on a graph can be achieved in $O(|E|)$ time via unconstrained convex optimization of a scalar field, bypassing $O(N^3)$ Semidefinite Programming.
+    \item \textbf{Metric Nearness Projection:} Theorem~\ref{thm:inverse_seam} shows that "repairing" noisy, physically invalid edge weights on a graph reduces to a strictly convex quadratic program in a scalar field (in variables $X=e^s$), solvable with standard sparse linear-algebra machinery rather than $O(N^3)$ semidefinite programming.
     \item \textbf{Intrinsic Metric Editing and Conformal Design:} The conformal graph rule provides a lightweight intrinsic metric design primitive for meshes, supporting tasks such as curvature-aware metric editing and conformal-style rescalings that integrate naturally with discrete conformal pipelines \cite{SpringbornSchroederPinkall2008,GuLuoSunWu2018}.
     \item \textbf{Isotropic Sizing Fields for Remeshing/LOD (Outlook):} Interpreting the seam as a scalar sizing field suggests a simple route to isotropic remeshing and level-of-detail control by locally expanding or contracting intrinsic lengths, without introducing full anisotropic metric tensors.
+    \item \textbf{Shape comparison via scalar representatives (Outlook):} In settings where shapes can be mapped (or registered) to a common background domain and represented primarily by a conformal factor, the geometry is captured by a scalar seam. This suggests practical surrogates for comparing and interpolating geometries by operating directly on seam fields (with curvature sensitivity guided by Theorem~\ref{thm:discrete_curvature}), rather than manipulating dense all-pairs distances.
     \item \textbf{Graph Neural Network (GNN) Rewiring:} A major bottleneck in GNNs is "oversquashing," where information chokes at structural bottlenecks. Standard rewiring destroys topology. Our Conformal Graph Rule allows a neural network to learn a seam $s$ that dynamically "stretches" bottlenecks (altering edge weights to increase local flow) while rigorously preserving the original topological adjacency and spectral validity of the graph.
+    \item \textbf{Seam-based metric learning for embeddings (Outlook):} Many visualization and embedding pipelines search for point positions in a fixed ambient space. An alternative suggested by the seam viewpoint is to keep a simple background domain fixed (e.g., a grid or mesh) and instead learn the intrinsic metric on that domain by optimizing a seam $s$, so that geodesic distances in the learned metric better match observed dissimilarities.
 \end{itemize}
 
 \paragraph{Future Work.}
