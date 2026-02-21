@@ -23,8 +23,10 @@
 \usepackage{amsthm}
 \usepackage{mathpazo}
 \usepackage[T1]{fontenc}
+\usepackage{xurl}
 \linespread{1.05}
 \usepackage{microtype}
+\setlength{\emergencystretch}{3em}
 \usepackage{bm}
 \usepackage{tikz}
 \usetikzlibrary{positioning, shapes.geometric}
@@ -40,6 +42,7 @@
 \usepackage{abstract}
 \renewcommand{\abstractnamefont}{\normalfont\bfseries}
 \renewcommand{\abstracttextfont}{\normalfont\small\itshape}
+\usepackage{mathtools}
 \usepackage{titlesec}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
@@ -48,7 +51,8 @@
 \fancyfoot[C]{\thepage}
 \setlength{\headheight}{14.5pt} % avoid "headheight too small" layout issues
 \usepackage{titling}
-\usepackage{hyperref}
+\usepackage[unicode]{hyperref}
+\urlstyle{same}
 \usepackage{bookmark}
 \hypersetup{bookmarksopen=true, bookmarksnumbered=true}
 
@@ -188,11 +192,11 @@ is again a Rule (it satisfies Locality, Gluing, and Functoriality).
 \end{proposition}
 \begin{proof}
 Locality follows immediately from the locality of $\mathcal{R}_1$ and $\mathcal{R}_2$: restricting to $V\subseteq U$ yields
-\[
+\begin{align*}
 \mathcal{R}_{2\circ 1}\bigl(V,(s_1|_V,s_2|_V)\bigr)
-=\mathcal{R}_2\bigl(V,s_2|_V;\,\mathcal{R}_1(V,s_1|_V)\bigr)
-=\bigl(\mathcal{R}_2(U,s_2;\mathcal{R}_1(U,s_1))\bigr)\big|_V.
-\]
+&=\mathcal{R}_2\bigl(V,s_2|_V;\,\mathcal{R}_1(V,s_1|_V)\bigr)\\
+&=\bigl(\mathcal{R}_2(U,s_2;\mathcal{R}_1(U,s_1))\bigr)\big|_V.
+\end{align*}
 Gluing holds because $\mathcal{R}_1$ glues local outputs into a unique global $\mathcal{T}'_U$, and then $\mathcal{R}_2$ glues local outputs (using that same $\mathcal{T}'_U$ as background) into a unique global $G$.
 
 For functoriality, let $\varphi:U\to U'$ be a structure-preserving map and let $s_1',s_2'$ be seams on $U'$. Write $\mathcal{T}'_{U'}:=\mathcal{R}_1(U',s_1')$. Using functoriality of $\mathcal{R}_1$ (since it is a Rule), we have
@@ -200,13 +204,13 @@ For functoriality, let $\varphi:U\to U'$ be a structure-preserving map and let $
 \varphi^*\mathcal{T}'_{U'}=\varphi^*\mathcal{R}_1(U',s_1')=\mathcal{R}_1(U,\varphi^*s_1').
 \]
 Now apply functoriality of $\mathcal{R}_2$ (again since it is a Rule), treating the intermediate background as part of its admissible input data:
-\[
+\begin{multline*}
 \varphi^*\mathcal{R}_{2\circ 1}(U',(s_1',s_2'))
 =\varphi^*\mathcal{R}_2\bigl(U',s_2';\mathcal{T}'_{U'}\bigr)
-=\mathcal{R}_2\bigl(U,\varphi^*s_2';\varphi^*\mathcal{T}'_{U'}\bigr)
+=\mathcal{R}_2\bigl(U,\varphi^*s_2';\varphi^*\mathcal{T}'_{U'}\bigr)\\
 =\mathcal{R}_2\bigl(U,\varphi^*s_2';\mathcal{R}_1(U,\varphi^*s_1')\bigr)
-=\mathcal{R}_{2\circ 1}(U,(\varphi^*s_1',\varphi^*s_2')).
-\]
+\hspace{0pt}=\mathcal{R}_{2\circ 1}\bigl(U,(\varphi^*s_1',\varphi^*s_2')\bigr),
+\end{multline*}
 This is exactly the Functoriality axiom for the composed Rule.
 \end{proof}
 
@@ -251,7 +255,7 @@ The Minkowski example in Table~\ref{tab:geometries} is included only as an illus
 
 \emph{Remark:} The framework easily recovers classical topological and relativistic results. For instance, applying a piecewise local $\mathcal{R}_{\text{Hessian}}$ stitched by $\mathcal{R}_{\text{Conf}}$ to a Morse seam with two critical points reconstructs Reeb's Sphere Theorem \cite{Milnor1963}. Similarly, applying a generalized Warped-Product rule to a generic radial seam recovers Birkhoff's Theorem for spherically symmetric vacuum solutions \cite{Wald1984}.
 
-\subsection{Discrete Rules ($\mathcal{R}_{\text{Graph}}$)}
+\subsection[Discrete Rules (\texorpdfstring{$\mathcal{R}_{\text{Graph}}$}{R\_Graph})]{Discrete Rules (\texorpdfstring{$\mathcal{R}_{\text{Graph}}$}{R\_Graph})}
 On a graph $G=(V,E)$ with background edge lengths $\ell_0(u,v)$, the seam $s: V \to \mathbb{R}$ generates a discrete shortest-path metric $D$ via edge weights $w(u,v)$. Two vital implementations are:
 \begin{enumerate}
     \item \textbf{Conformal Graph Rule ($\mathcal{R}_{\text{Graph-Exp } s}$):} 
@@ -334,10 +338,12 @@ Since $M$ is compact, $d_{g_0}(x,y)\le \mathrm{diam}(M,g_0)$, so the right-hand 
 \begin{remark}[On the spanner assumption]
 The spanner hypothesis in Lemma~\ref{lem:path-approx} is the precise technical condition needed to convert continuous $g_0$-geodesic distances into comparable \emph{edge-path} distances on the graph with an $O(h_n)$ error. Sampling/coverage alone ensures $V_n$ is dense in $M$, but without a spanner-type assumption one may only obtain a mesh-dependent \emph{multiplicative} distortion between graph shortest-path length and $d_{g_0}$.
 It is important to distinguish two related but different notions.
-(i) In the planar Euclidean setting, the Delaunay triangulation is a \emph{geometric $t$-spanner} (for an explicit universal constant $t>1$); see, e.g., \cite{KeilGutwin1992}. This is a constant-factor guarantee.
-(ii) The hypothesis used in Lemma~\ref{lem:path-approx} is stronger: it asks for an \emph{asymptotically geodesic} spanner with stretch $1+O(h_n)$, which is the ingredient that yields an \emph{additive} $O(h_n)$ distance error for fixed $x,y\in M$. A constant-factor spanner bound alone does \emph{not} imply such an asymptotically tight estimate.
+\begin{enumerate}[label=(\roman*), leftmargin=*]
+    \item In the planar Euclidean setting, the Delaunay triangulation is a \emph{geometric $t$-spanner} (for an explicit universal constant $t>1$); see, e.g., \cite{KeilGutwin1992}. This is a constant-factor guarantee.
+    \item The hypothesis used in Lemma~\ref{lem:path-approx} is stronger: it asks for an \emph{asymptotically geodesic} spanner with stretch $1+O(h_n)$, which is the ingredient that yields an \emph{additive} $O(h_n)$ distance error for fixed $x,y\in M$. A constant-factor spanner bound alone does \emph{not} imply such an asymptotically tight estimate.
+\end{enumerate}
 
-For smooth manifolds, $(1+o(1))$-type geodesic-graph approximation results are typically proved for sufficiently dense \emph{neighborhood graphs} (e.g., $\varepsilon$-graphs or $k$NN graphs with neighborhood size tending to zero but containing many sample points), rather than for bounded-degree triangulation 1-skeleta; see, e.g., \cite{TenenbaumDeSilvaLangford2000} for a representative uniform convergence statement in the Isomap setting. In our experiments we use Delaunay triangulations (for moderate $n$) and switch to symmetric $k$NN graphs for scalability; empirically the resulting shortest-path distances exhibit the expected $O(h)$ behavior in Figure~\ref{fig:convergence}.
+For smooth manifolds, $(1+o(1))$-type geodesic-graph approximation results are typically proved for sufficiently dense \emph{neighborhood graphs} (e.g., $\varepsilon$-graphs or $k$NN graphs with neighborhood size tending to zero but containing many sample points), rather than for bounded-degree triangulation 1-skeleta; see, e.g., \cite{TenenbaumDeSilvaLangford2000} for a representative uniform convergence statement in the Isomap setting. In numerical experiments, one often uses Delaunay triangulations (for moderate $n$) and switches to symmetric $k$NN graphs for scalability; empirically the resulting shortest-path distances exhibit the expected $O(h)$ behavior.
 
 For background on Delaunay triangulations and mesh generation (independent of spanner/stretch guarantees), see \cite{Shewchuk2002,Aurenhammer2013}.
 \end{remark}
