@@ -461,9 +461,11 @@ This yields the stated identity.
 
 To complement the theoretical results, we validate the inverse-design quadratic program (Theorem~\ref{thm:inverse_seam}) on random geometric graphs. The reference implementation is publicly available at \url{https://github.com/Roenbaeck/seams}.
 
-We generate graphs with $n \in \{10^2, 10^3, 10^4, 10^5\}$ vertices and assign a ground-truth seam $s_{\mathrm{gt}}$. Ground-truth edge weights $w_{\mathrm{gt}}$ are generated via the conformal graph rule. We then form noisy target weights $w^*(u,v) = w_{\mathrm{gt}}(u,v)(1 + \sigma \xi_{uv})$, where $\xi_{uv}$ is uniform noise and $\sigma \in [0, 0.20]$ controls the noise level. We solve the strictly convex QP to recover the optimal seam $s^*$ and its induced weights $w_{\mathrm{opt}}$.
+We generate graphs with $n \in \{10^2, 10^3, 10^4\}$ vertices and assign a ground-truth seam $s_{\mathrm{gt}}$. Ground-truth edge weights $w_{\mathrm{gt}}$ are generated via the conformal graph rule. We then form noisy target weights $w^*(u,v) = w_{\mathrm{gt}}(u,v)(1 + \sigma \xi_{uv})$, where $\xi_{uv}$ is i.i.d. standard normal noise and $\sigma \in [0, 0.20]$ controls the noise level. For $n\le 5000$ we use a Delaunay triangulation; for larger $n$ we use a symmetric $k$-nearest-neighbor graph for scalability. We solve the strictly convex QP to recover the optimal seam $s^*$ and its induced weights $w_{\mathrm{opt}}$.
 
-Table~\ref{tab:validation} summarizes the results. The optimization consistently denoises the metric: for instance, at $n=10^5$ and $\sigma=0.10$, the noisy weights deviate from the truth by $10.0\%$, but the recovered weights $w_{\mathrm{opt}}$ reduce this error to $5.3\%$. This denoising effect extends to the induced shortest-path metric, where the mean relative path error drops from $5.4\%$ (noisy) to $2.4\%$ (recovered). Furthermore, finite-difference checks confirm that the analytical derivatives and Hessian match the numerical ones to high precision (relative error $\sim 10^{-8}$), validating the exactness of the quadratic formulation.
+Table~\ref{tab:validation} summarizes the results. The optimization consistently denoises the metric: for instance, at $n=10^4$ and $\sigma=0.10$, the noisy weights deviate from the truth by $9.9\%$, while the recovered weights $w_{\mathrm{opt}}$ reduce this error to $5.3\%$. This denoising effect extends to the induced shortest-path metric, where the mean relative path error drops from $5.0\%$ (noisy) to $2.3\%$ (recovered). Furthermore, finite-difference checks confirm that the analytical derivatives and Hessian-vector products match numerical finite differences to high precision (worst relative errors $\sim 10^{-6}$ and $\sim 10^{-9}$ over the sweep), validating the exactness of the quadratic formulation.
+
+Finally, we empirically visualize the predicted $O(h)$ convergence of the discrete shortest-path metric to the continuous conformal metric (Theorems~\ref{thm:gh-limit}--\ref{thm:oh-bound}) by comparing discrete distances on quasi-uniform triangulations against a high-resolution grid-based approximation of the continuous geodesic distance. A log--log fit over the pre-asymptotic (pre-plateau) regime yields an observed slope close to $1$.
 
 \begin{table}[ht]
 \centering
@@ -480,13 +482,13 @@ $n$ & $|E|$ & $\sigma$ & \multicolumn{2}{c}{Weight Error (to $w_{\mathrm{gt}}$)}
 100 & 286 & 0.10 & 0.107 & 0.068 & 0.034 & 0.035 & 0.914 \\
 100 & 286 & 0.20 & 0.213 & 0.136 & 0.073 & 0.071 & 0.122 \\
 \midrule
-10,000 & 46,229 & 0.05 & 0.050 & 0.026 & 0.017 & 0.008 & 0.993 \\
+1,000 & 2,978 & 0.05 & 0.050 & 0.040 & 0.012 & 0.011 & 0.986 \\
+1,000 & 2,978 & 0.10 & 0.100 & 0.080 & 0.027 & 0.024 & 0.943 \\
+1,000 & 2,978 & 0.20 & 0.201 & 0.160 & 0.075 & 0.065 & 0.766 \\
+\midrule
+10,000 & 46,229 & 0.05 & 0.050 & 0.026 & 0.017 & 0.008 & 0.994 \\
 10,000 & 46,229 & 0.10 & 0.099 & 0.053 & 0.050 & 0.023 & 0.974 \\
 10,000 & 46,229 & 0.20 & 0.198 & 0.105 & 0.144 & 0.067 & 0.900 \\
-\midrule
-100,000 & 461,789 & 0.05 & 0.050 & 0.027 & 0.018 & 0.008 & 0.993 \\
-100,000 & 461,789 & 0.10 & 0.100 & 0.053 & 0.054 & 0.024 & 0.974 \\
-100,000 & 461,789 & 0.20 & 0.200 & 0.106 & 0.156 & 0.073 & 0.898 \\
 \bottomrule
 \end{tabular}
 \end{table}

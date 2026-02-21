@@ -22,6 +22,100 @@ import matplotlib.pyplot as plt
 SAMPLE_SOURCES = 50
 SAMPLE_TARGETS_PER_SOURCE = 50
 
+# The convergence study can take additional time (extra meshes + a dense grid Dijkstra).
+RUN_CONVERGENCE_STUDY = True
+
+# Mesh construction settings.
+# Delaunay triangulation is great for quality meshes (and gives faces), but can become
+# slow and occasionally fragile at large N due to QHull behavior and memory.
+DELAUNAY_MAX_N = 5000
+KNN_K = 8
+
+
+def seam_gt(points: np.ndarray) -> np.ndarray:
+    """Ground-truth seam field used throughout the validation."""
+    return np.sin(2 * np.pi * points[:, 0]) * np.cos(2 * np.pi * points[:, 1])
+
+
+def _angles_from_edge_lengths(a: float, b: float, c: float):
+    """Return internal angles (A,B,C) for side lengths (a,b,c).
+
+    Angles are opposite corresponding side lengths.
+    """
+
+    def safe_acos(x: float) -> float:
+        return float(np.arccos(np.clip(x, -1.0, 1.0)))
+
+    eps = 1e-15
+    a = float(max(a, eps))
+    b = float(max(b, eps))
+    c = float(max(c, eps))
+
+    # Law of cosines
+    cosA = (b * b + c * c - a * a) / (2.0 * b * c)
+    cosB = (a * a + c * c - b * b) / (2.0 * a * c)
+    cosC = (a * a + b * b - c * c) / (2.0 * a * b)
+    return safe_acos(cosA), safe_acos(cosB), safe_acos(cosC)
+
+
+def compute_discrete_gaussian_curvature(
+    n_vertices: int,
+    faces: np.ndarray,
+    boundary_vertices: np.ndarray,
+    edge_length_map: dict[tuple[int, int], float],
+):
+    """Compute angle-defect discrete Gaussian curvature at vertices.
+
+    For interior vertices u: K(u) = 2*pi - sum_t theta_t(u)
+    For boundary vertices u: K(u) =   pi - sum_t theta_t(u)
+    """
+    if faces is None:
+        raise ValueError("faces is required to compute curvature")
+
+    angle_sum = np.zeros(int(n_vertices), dtype=float)
+    faces = np.asarray(faces, dtype=np.int64)
+
+    for (i, j, k) in faces:
+        ij = edge_length_map.get((min(i, j), max(i, j)))
+        jk = edge_length_map.get((min(j, k), max(j, k)))
+        ki = edge_length_map.get((min(k, i), max(k, i)))
+        if ij is None or jk is None or ki is None:
+            # Should not happen for Delaunay-derived edge sets, but keep robust.
+            continue
+
+        # Side lengths opposite vertices (i,j,k)
+        a = float(jk)  # opposite i
+        b = float(ki)  # opposite j
+        c = float(ij)  # opposite k
+        Ai, Aj, Ak = _angles_from_edge_lengths(a, b, c)
+        angle_sum[i] += Ai
+        angle_sum[j] += Aj
+        angle_sum[k] += Ak
+
+    boundary_mask = np.zeros(int(n_vertices), dtype=bool)
+    if boundary_vertices is not None and len(boundary_vertices) > 0:
+        boundary_mask[np.asarray(boundary_vertices, dtype=np.int64)] = True
+
+    K = np.empty(int(n_vertices), dtype=float)
+    K[boundary_mask] = np.pi - angle_sum[boundary_mask]
+    K[~boundary_mask] = 2.0 * np.pi - angle_sum[~boundary_mask]
+    return K, angle_sum
+
+
+def curvature_relative_error(K_gt: np.ndarray, K_est: np.ndarray):
+    """Relative error summary between two curvature vectors."""
+    K_gt = np.asarray(K_gt, dtype=float)
+    K_est = np.asarray(K_est, dtype=float)
+    eps = 1e-12
+    rel_l2 = float(np.linalg.norm(K_est - K_gt) / (np.linalg.norm(K_gt) + eps))
+    abs_rel = np.abs(K_est - K_gt) / (np.abs(K_gt) + eps)
+    return {
+        "curv_rel_l2": rel_l2,
+        "curv_abs_rel_mean": float(np.mean(abs_rel)),
+        "curv_abs_rel_p95": float(np.percentile(abs_rel, 95)),
+        "curv_abs_rel_max": float(np.max(abs_rel)),
+    }
+
 
 def plot_sweep_summary(results):
     """Plot key sweep metrics as curves vs sigma for each mesh size.
@@ -176,7 +270,7 @@ def generate_mesh(n_points: int, rng: np.random.Generator):
     points = rng.random((n_points, 2))
 
     # Delaunay becomes expensive/fragile at large n; use k-NN graph instead.
-    if n_points <= 5000:
+    if n_points <= DELAUNAY_MAX_N:
         tri = Delaunay(points)
         edges = set()
         for simplex in tri.simplices:
@@ -186,20 +280,21 @@ def generate_mesh(n_points: int, rng: np.random.Generator):
             edges.add((min(c, a), max(c, a)))
         edges = np.array(list(edges), dtype=np.int64)
         faces = tri.simplices
-        return points, edges, faces
+        boundary_vertices = np.unique(tri.convex_hull.reshape(-1)).astype(np.int64)
+        return points, edges, faces, boundary_vertices
 
     # k-NN fallback: undirected edges to k nearest neighbors.
-    k = 8
     tree = cKDTree(points)
-    nn = tree.query(points, k=k + 1)[1][:, 1:]  # drop self
-    u = np.repeat(np.arange(n_points, dtype=np.int64), k)
+    nn = tree.query(points, k=KNN_K + 1)[1][:, 1:]  # drop self
+    u = np.repeat(np.arange(n_points, dtype=np.int64), KNN_K)
     v = nn.reshape(-1).astype(np.int64)
     a = np.minimum(u, v)
     b = np.maximum(u, v)
     pairs = np.stack([a, b], axis=1)
     edges = np.unique(pairs, axis=0)
     faces = None
-    return points, edges, faces
+    boundary_vertices = None
+    return points, edges, faces, boundary_vertices
 
 
 def solve_inverse_seam(points: np.ndarray, edges: np.ndarray, w_star: np.ndarray):
@@ -338,7 +433,7 @@ def run_experiment(n_points: int, sigma: float, seed: int = 42):
     rng_noise = np.random.default_rng(seed + 1)
     rng_pairs = np.random.default_rng(seed + 2)
 
-    points, edges, _faces = generate_mesh(n_points=n_points, rng=rng_points)
+    points, edges, faces, boundary_vertices = generate_mesh(n_points=n_points, rng=rng_points)
     N = len(points)
     E = len(edges)
 
@@ -346,7 +441,7 @@ def run_experiment(n_points: int, sigma: float, seed: int = 42):
     v = edges[:, 1].astype(np.int64)
     l0 = np.linalg.norm(points[u] - points[v], axis=1)
 
-    s_gt = np.sin(2 * np.pi * points[:, 0]) * np.cos(2 * np.pi * points[:, 1])
+    s_gt = seam_gt(points)
     X_gt = np.exp(s_gt)
     w_gt = l0 * (X_gt[u] + X_gt[v]) / 2.0
 
@@ -358,6 +453,21 @@ def run_experiment(n_points: int, sigma: float, seed: int = 42):
     X_opt, _l0_check, _u_check, _v_check = solve_inverse_seam(points, edges, w_star)
     s_opt = np.log(X_opt)
     w_opt = l0 * (X_opt[u] + X_opt[v]) / 2.0
+
+    # Curvature error (only defined for triangle meshes).
+    if faces is not None:
+        w_gt_map = {(int(a), int(b)): float(w) for (a, b), w in zip(edges, w_gt)}
+        w_opt_map = {(int(a), int(b)): float(w) for (a, b), w in zip(edges, w_opt)}
+        K_gt, _ = compute_discrete_gaussian_curvature(N, faces, boundary_vertices, w_gt_map)
+        K_opt, _ = compute_discrete_gaussian_curvature(N, faces, boundary_vertices, w_opt_map)
+        curv_metrics = curvature_relative_error(K_gt, K_opt)
+    else:
+        curv_metrics = {
+            "curv_rel_l2": float("nan"),
+            "curv_abs_rel_mean": float("nan"),
+            "curv_abs_rel_p95": float("nan"),
+            "curv_abs_rel_max": float("nan"),
+        }
 
     # Shortest-path distortion statistics between recovered/noisy metric and ground truth.
     # We sample a set of (source, target) pairs for speed.
@@ -453,19 +563,268 @@ def run_experiment(n_points: int, sigma: float, seed: int = 42):
         "path_rel_max": path_rel_max,
         "dist_ratio_mean": dist_ratio_mean,
     }
+    metrics.update(curv_metrics)
     a_fit, b_fit, r2_fit = compute_affine_fit(s_gt, s_opt)
     metrics.update({"a_fit": float(a_fit), "b_fit": float(b_fit), "r2_fit": float(r2_fit)})
     return points, edges, s_gt, s_opt, w_gt, w_star, w_opt, metrics
 
+
+def build_continuous_grid_geodesic_graph(grid_res: int):
+    """High-resolution grid approximation to geodesics under g=e^{2 s_gt} g_Euclidean.
+
+    Uses an 8-neighbor grid (adds diagonals) with edge lengths approximated by an
+    endpoint-average rule:
+        L(p,q) ≈ 0.5*(e^{s(p)} + e^{s(q)}) * ||p-q||.
+
+    The diagonal connections substantially reduce anisotropy versus a 4-neighbor grid.
+    """
+    if grid_res < 10:
+        raise ValueError("grid_res too small")
+
+    xs = np.linspace(0.0, 1.0, grid_res)
+    ys = np.linspace(0.0, 1.0, grid_res)
+    X, Y = np.meshgrid(xs, ys, indexing="xy")
+    pts = np.stack([X.reshape(-1), Y.reshape(-1)], axis=1)
+    s = seam_gt(pts)
+    f = np.exp(s)
+
+    dx = float(xs[1] - xs[0])
+    dy = float(ys[1] - ys[0])
+
+    # Horizontal edges (i,j) -> (i+1,j)
+    n = grid_res
+    idx = np.arange(n * n, dtype=np.int64).reshape(n, n)
+    left = idx[:, :-1].reshape(-1)
+    right = idx[:, 1:].reshape(-1)
+    w_h = 0.5 * (f[left] + f[right]) * dx
+
+    # Vertical edges (i,j) -> (i,j+1)
+    down = idx[:-1, :].reshape(-1)
+    up = idx[1:, :].reshape(-1)
+    w_v = 0.5 * (f[down] + f[up]) * dy
+
+    # Diagonal edges
+    diag1_a = idx[:-1, :-1].reshape(-1)
+    diag1_b = idx[1:, 1:].reshape(-1)
+    diag2_a = idx[:-1, 1:].reshape(-1)
+    diag2_b = idx[1:, :-1].reshape(-1)
+    ddiag = float(np.hypot(dx, dy))
+    w_d1 = 0.5 * (f[diag1_a] + f[diag1_b]) * ddiag
+    w_d2 = 0.5 * (f[diag2_a] + f[diag2_b]) * ddiag
+
+    rows = np.concatenate([left, right, down, up, diag1_a, diag1_b, diag2_a, diag2_b])
+    cols = np.concatenate([right, left, up, down, diag1_b, diag1_a, diag2_b, diag2_a])
+    data = np.concatenate([w_h, w_h, w_v, w_v, w_d1, w_d1, w_d2, w_d2]).astype(float)
+    A = sp.coo_matrix((data, (rows, cols)), shape=(n * n, n * n)).tocsr()
+    return pts, A
+
+
+def _generate_quasi_uniform_points(n_points: int, rng: np.random.Generator, jitter: float = 0.25) -> np.ndarray:
+    """Quasi-uniform points in [0,1]^2 via a jittered grid.
+
+    This is used for the convergence study to better match quasi-uniform triangulation
+    assumptions (and to reduce run-to-run stochasticity).
+    """
+    if n_points < 4:
+        raise ValueError("n_points too small")
+
+    m = int(np.ceil(np.sqrt(n_points)))
+    xs = np.linspace(0.0, 1.0, m)
+    ys = np.linspace(0.0, 1.0, m)
+    X, Y = np.meshgrid(xs, ys, indexing="xy")
+    pts = np.stack([X.reshape(-1), Y.reshape(-1)], axis=1)
+
+    # Jitter amount is relative to grid spacing.
+    if m >= 2:
+        h = float(xs[1] - xs[0])
+    else:
+        h = 1.0
+    noise = rng.uniform(low=-1.0, high=1.0, size=pts.shape) * (jitter * h)
+    pts = np.clip(pts + noise, 0.0, 1.0)
+
+    return pts[: int(n_points)]
+
+
+def _nearest_grid_index(p: np.ndarray, grid_res: int) -> int:
+    """Nearest node index in a [0,1]^2 regular grid (grid_res x grid_res)."""
+    x = float(np.clip(p[0], 0.0, 1.0))
+    y = float(np.clip(p[1], 0.0, 1.0))
+    ix = int(np.rint(x * (grid_res - 1)))
+    iy = int(np.rint(y * (grid_res - 1)))
+    ix = int(np.clip(ix, 0, grid_res - 1))
+    iy = int(np.clip(iy, 0, grid_res - 1))
+    return iy * grid_res + ix
+
+
+def run_convergence_rate_study(
+    n_grid: list[int],
+    test_points: np.ndarray,
+    sigma: float = 0.0,
+    grid_res: int = 250,
+    seed: int = 123,
+    n_repeats: int = 1,
+    print_table: bool = True,
+    plateau_fit_factor: float = 1.5,
+):
+    """Demonstrate O(h) convergence by comparing mesh graph distances to a
+    high-resolution grid approximation of the continuous geodesic distance.
+    """
+    test_points = np.asarray(test_points, dtype=float)
+    if test_points.ndim != 2 or test_points.shape[1] != 2:
+        raise ValueError("test_points must have shape (m,2)")
+
+    cont_pts, cont_A = build_continuous_grid_geodesic_graph(grid_res=grid_res)
+    cont_src_idx = np.array([_nearest_grid_index(p, grid_res) for p in test_points], dtype=np.int64)
+    # Compute all-pairs distances between test points on the continuous grid (few sources).
+    cont_d_all = dijkstra(cont_A, directed=False, indices=cont_src_idx)
+
+    pairs = [(i, j) for i in range(len(test_points)) for j in range(i + 1, len(test_points))]
+    cont_d_pairs = np.array([float(cont_d_all[i, cont_src_idx[j]]) for i, j in pairs], dtype=float)
+
+    if n_repeats < 1:
+        raise ValueError("n_repeats must be >= 1")
+
+    rows = []
+    for n_points in n_grid:
+        mean_errs = []
+        max_errs = []
+        h_vals_rep = []
+        for rep in range(n_repeats):
+            # Different mesh realizations per repeat, deterministic.
+            rng_points = np.random.default_rng(seed + 100_000 * rep + int(n_points))
+
+            # For the convergence plot we intentionally use a quasi-uniform triangulation.
+            points = _generate_quasi_uniform_points(n_points=n_points, rng=rng_points, jitter=0.25)
+            tri = Delaunay(points)
+            edges_set = set()
+            for simplex in tri.simplices:
+                a, b, c = (int(simplex[0]), int(simplex[1]), int(simplex[2]))
+                edges_set.add((min(a, b), max(a, b)))
+                edges_set.add((min(b, c), max(b, c)))
+                edges_set.add((min(c, a), max(c, a)))
+            edges = np.array(list(edges_set), dtype=np.int64)
+            u = edges[:, 0].astype(np.int64)
+            v = edges[:, 1].astype(np.int64)
+            l0 = np.linalg.norm(points[u] - points[v], axis=1)
+            s = seam_gt(points)
+            X = np.exp(s)
+            w = l0 * (X[u] + X[v]) / 2.0
+
+            # Optional noise injection (kept for experimentation; default sigma=0).
+            if sigma != 0.0:
+                rng_noise = np.random.default_rng(seed + 999 + 10_000 * rep + int(n_points))
+                xi = rng_noise.standard_normal(len(w))
+                w = np.clip(w * (1.0 + sigma * xi), 1e-6, None)
+
+            # Mesh graph distances between nearest vertices to the same test points.
+            tree = cKDTree(points)
+            mesh_src = np.array([int(tree.query(p)[1]) for p in test_points], dtype=np.int64)
+
+            mesh_rows = np.concatenate([u, v])
+            mesh_cols = np.concatenate([v, u])
+            A = sp.coo_matrix(
+                (np.concatenate([w, w]), (mesh_rows, mesh_cols)),
+                shape=(len(points), len(points)),
+            ).tocsr()
+
+            mesh_d_all = dijkstra(A, directed=False, indices=mesh_src)
+            mesh_d_pairs = np.array([float(mesh_d_all[i, mesh_src[j]]) for i, j in pairs], dtype=float)
+
+            abs_err = np.abs(mesh_d_pairs - cont_d_pairs)
+            mean_errs.append(float(np.mean(abs_err)))
+            max_errs.append(float(np.max(abs_err)))
+            h_vals_rep.append(float(np.mean(l0)))
+
+        if not mean_errs:
+            continue
+
+        mean_abs_err = float(np.mean(mean_errs))
+        mean_abs_err_std = float(np.std(mean_errs, ddof=1)) if len(mean_errs) >= 2 else 0.0
+        max_abs_err = float(np.mean(max_errs))
+        max_abs_err_std = float(np.std(max_errs, ddof=1)) if len(max_errs) >= 2 else 0.0
+        h = float(np.mean(h_vals_rep))
+        rows.append({
+            "n_points": int(n_points),
+            "h": h,
+            "mean_abs_err": mean_abs_err,
+            "mean_abs_err_std": mean_abs_err_std,
+            "max_abs_err": max_abs_err,
+            "max_abs_err_std": max_abs_err_std,
+            "n_repeats": int(n_repeats),
+        })
+
+    if not rows:
+        return
+
+    rows = sorted(rows, key=lambda r: r["h"], reverse=True)
+    h_vals = np.array([r["h"] for r in rows], dtype=float)
+    err_vals = np.array([r["mean_abs_err"] for r in rows], dtype=float)
+    err_std = np.array([r.get("mean_abs_err_std", 0.0) for r in rows], dtype=float)
+
+    mask = (h_vals > 0) & (err_vals > 0) & np.isfinite(h_vals) & np.isfinite(err_vals)
+    slope_full = float("nan")
+    intercept_full = float("nan")
+    if np.count_nonzero(mask) >= 2:
+        slope_full, intercept_full = np.polyfit(np.log(h_vals[mask]), np.log(err_vals[mask]), 1)
+        slope_full = float(slope_full)
+        intercept_full = float(intercept_full)
+
+    # Robust fit: exclude the near-plateau region where err is close to its minimum.
+    slope = float("nan")
+    intercept = float("nan")
+    if np.count_nonzero(mask) >= 2:
+        min_err = float(np.min(err_vals[mask]))
+        thresh = float(max(0.0, plateau_fit_factor) * min_err)
+        mask2 = mask & (err_vals >= thresh)
+        if np.count_nonzero(mask2) >= 2:
+            slope, intercept = np.polyfit(np.log(h_vals[mask2]), np.log(err_vals[mask2]), 1)
+            slope = float(slope)
+            intercept = float(intercept)
+
+    if print_table:
+        print("\n--- Convergence study data (discrete vs grid-geodesic) ---")
+        print(f"grid_res={grid_res}, sigma={sigma:.3f}, repeats={n_repeats}")
+        if np.isfinite(slope_full):
+            print(f"log-log fit slope (all points): {slope_full:.3f}")
+        if np.isfinite(slope):
+            print(f"log-log fit slope (excluding plateau; factor={plateau_fit_factor:.2f}): {slope:.3f}")
+        print("n_points      h(mean)     mean_abs_err    std")
+        for r in rows:
+            print(
+                f"{r['n_points']:7d}  {r['h']:.6f}   {r['mean_abs_err']:.6e}  {r['mean_abs_err_std']:.2e}"
+            )
+
+    fig, ax = plt.subplots(1, 1, figsize=(6.5, 5.0))
+    if n_repeats >= 2 and np.any(err_std > 0):
+        ax.errorbar(h_vals, err_vals, yerr=err_std, fmt="o", capsize=3)
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+    else:
+        ax.loglog(h_vals, err_vals, marker="o")
+    ax.set_xlabel("h (mean Euclidean edge length)")
+    ax.set_ylabel("mean |d_n - d_g| over test pairs")
+    title = "Convergence of discrete shortest-path distances"
+    if np.isfinite(slope):
+        title += f" (fit slope ≈ {slope:.2f})"
+    elif np.isfinite(slope_full):
+        title += f" (fit slope ≈ {slope_full:.2f})"
+    ax.set_title(title)
+    ax.grid(True, which="both", alpha=0.3)
+    plt.tight_layout()
+    print("\nRendering convergence rate plot...")
+    plt.show()
+
+    return rows, slope
+
 def main():
-    n_grid = [100, 1000, 10000, 100000]
+    n_grid = [100, 1000, 10000]
     sigma_grid = [0.00, 0.05, 0.10, 0.15, 0.20]
 
     print("--- Seam-Driven Geometry Validation (sweep) ---")
     print(
         "Columns: n  E  sigma  mean_l0  max_l0  fit(w_opt,w*)  noisy->truth  denoise->truth  "
         "path_rel_mean_noisy  path_rel_p95_noisy  path_rel_mean  path_rel_p95  "
-        "d_path_mean  d_path_p95  corr  a_fit  b_fit  R2"
+        "path_rel_mean_improve  path_rel_p95_improve  curv_rel_l2  curv_abs_rel_mean  corr  a_fit  b_fit  R2"
     )
     results = []
     deriv_checks = []
@@ -491,6 +850,7 @@ def main():
                 f"{m['path_rel_mean_noisy']:.4f} {m['path_rel_p95_noisy']:.4f} "
                 f"{m['path_rel_mean']:.4f} {m['path_rel_p95']:.4f} "
                 f"{m['path_rel_mean_improve']:.4f} {m['path_rel_p95_improve']:.4f} "
+                f"{m['curv_rel_l2']:.4f} {m['curv_abs_rel_mean']:.4f} "
                 f"{m['pearson_r']:.4f} {m['a_fit']:.4f} {m['b_fit']:.4f} {m['r2_fit']:.4f}"
             )
             if (n, float(sigma)) == example_key:
@@ -549,6 +909,32 @@ def main():
         plt.tight_layout()
         print("\nRendering example visualization...")
         plt.show()
+
+    # Optional: explicit O(h) convergence plot for shortest-path distances.
+    # Restricted to Delaunay meshes (n <= 5000) where faces are well-defined.
+    if RUN_CONVERGENCE_STUDY:
+        # Use near-square counts for quasi-uniform jittered-grid triangulations.
+        conv_n_grid = [225, 400, 625, 900, 1600, 2500, 3600, 4900]
+        conv_test_points = np.array(
+            [
+                [0.2, 0.2],
+                [0.8, 0.2],
+                [0.2, 0.8],
+                [0.8, 0.8],
+                [0.5, 0.5],
+            ],
+            dtype=float,
+        )
+        run_convergence_rate_study(
+            n_grid=conv_n_grid,
+            test_points=conv_test_points,
+            sigma=0.0,
+            grid_res=250,
+            seed=123,
+            n_repeats=1,
+            print_table=True,
+            plateau_fit_factor=1.5,
+        )
 
 if __name__ == "__main__":
     main()
