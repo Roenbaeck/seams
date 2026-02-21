@@ -127,8 +127,15 @@ Our contributions are geared toward mesh and graph processing, where one seeks p
     \item \textbf{A scalar-first metric parameterization on graphs/meshes.} We study a conformal graph rule that assigns edge lengths using an endpoint quadrature of \(e^{s}\), producing a shortest-path metric with local control by a scalar seam.
     \item \textbf{Quantitative discrete-to-continuum guarantees.} On quasi-uniform triangulations, we prove an $O(h)$ Gromov--Hausdorff convergence rate between the seam-generated discrete metric and the smooth conformal metric (Theorem~\ref{thm:gh-limit}) and derive a corresponding uniform $O(h)$ metric error bound (Theorem~\ref{thm:oh-bound}).
     \item \textbf{Curvature sensitivity via cotangent weights.} We show that the Jacobian of angle-defect curvature with respect to the seam agrees (up to a constant factor) with the cotangent Laplacian at \(s=0\) (Theorem~\ref{thm:discrete_curvature}), providing a differentiable link between scalar parameters and discrete curvature.
-    \item \textbf{Convex inverse metric design.} We reduce edge-weight fitting under the conformal graph rule to a strictly convex quadratic program in variables \(X_u=e^{s(u)}\) on non-bipartite graphs (Theorem~\ref{thm:inverse_seam}), and we further provide gauge-fixing and conditioning guarantees (Theorem~\ref{thm:inverse_seam_stability}).
+    \item \textbf{Convex inverse metric design.} We reduce edge-weight fitting under the conformal graph rule to a strictly convex quadratic program in variables \(X_u=e^{s(u)}\) on non-bipartite graphs (Theorem~\ref{thm:inverse_seam}), leveraging a classical signless-Laplacian positive-definiteness criterion \cite{Desai1994,CvetkovicRowlinsonSimic2007}. We further provide gauge-fixing and conditioning guarantees (Theorem~\ref{thm:inverse_seam_stability}).
 \end{enumerate}
+
+\subsection{Related Work}
+Scalar fields on meshes are a classical and widely used representation in geometry processing, in particular as vertex-based conformal factors and potentials. Discrete uniformization and discrete conformal parameterizations seek a scalar conformal scaling that induces a metric of prescribed curvature or that supports flattening/parameterization; see, e.g., Gu--Luo--Sun--Wu \cite{GuLuoSunWu2018} and the variational formulations of Springborn--Schr\"oder--Pinkall \cite{SpringbornSchroederPinkall2008}. In this literature, a scalar field (often a log-scale factor) is the primary unknown, and the induced metric is obtained by a local rule that rescales discrete lengths/angles.
+
+Circle packing provides another scalar-first route to discrete conformal geometry, in which circle radii (or log-radii) act as scalar variables whose induced intersection patterns and edge lengths encode a discrete conformal structure; see Stephenson \cite{Stephenson2005} for an overview and references. Closely related, combinatorial Ricci flow evolves a vertex-based scalar parameterization (e.g., circle radii or log-scale factors) to drive discrete curvature toward a target, with Chow--Luo \cite{ChowLuo2003} as a foundational reference.
+
+Our intent is not to claim novelty of using scalar fields per se, but to formalize a general "seam $\to$ rule $\to$ geometry" interface that accommodates multiple continuous and discrete constructions under one axiomatic umbrella, and to highlight algorithmic consequences of a particular discrete edge-length rule: a quantitative discrete-to-continuum guarantee for the resulting shortest-path metric, a curvature sensitivity identity, and a convex inverse-design formulation for fitting target edge weights.
 
 \section{Framework: Seams, Rules, and Composition}
 
@@ -169,7 +176,7 @@ The generative power of the framework relies on specific definitions of $\mathca
 \subsection{Continuous Rules}
 For a smooth manifold $U$, we highlight three primary rules generating metric tensors $g$:
 \begin{enumerate}
-    \item \textbf{The Hessian Rule ($\mathcal{R}_{\text{Hessian}}$):} $g = \nabla^2 s$ for a chosen torsion-free connection $\nabla$ (in local affine coordinates: $g_{ij}=\partial_i\partial_j s$). The rule yields a Riemannian metric where $g$ is positive definite (e.g., for strictly convex $s$). Hessian geometry is central to Information Geometry \cite{Amari2016,Shima2007}.
+  \item \textbf{The Hessian Rule ($\mathcal{R}_{\text{Hessian}}$):} $g = \nabla^2 s$ for a chosen torsion-free connection $\nabla$ (in local affine coordinates: $g_{ij}=\partial_i\partial_j s$). Where $g$ is positive definite (e.g., for strictly convex $s$), it defines a Riemannian metric locally (as proven later in Theorem~\ref{thm:hessian-local-metric}). In general, $\nabla^2 s$ may be indefinite; allowing such outputs naturally leads to pseudo-Riemannian geometries, which we do not develop here. Hessian geometry is central to Information Geometry \cite{Amari2016,Shima2007}.
     \item \textbf{The Conformal Rule ($\mathcal{R}_{\text{Conf}}$):} $g_{ij} = e^{2s} h_{ij}$. Generates geometries conformally equivalent to a background metric $h$ \cite{Petersen2006}.
     \item \textbf{The Gradient Rule ($\mathcal{R}_{\text{Grad}}$):} $g_{ij} = |\nabla s|_h^2 h_{ij}$. A subset of conformal geometries controlled by the eikonal magnitude of the seam \cite{Sethian1999}.
 \end{enumerate}
@@ -185,12 +192,20 @@ For a smooth manifold $U$, we highlight three primary rules generating metric te
 \toprule
 \textbf{Geometry} & \textbf{Rule} & \textbf{Background} & \textbf{Seam $s$} \\ \midrule
 Euclidean $\mathbb{E}^n$ & $\mathcal{R}_{\text{Hessian}}$ & None & $\frac{1}{2}\sum (x^i)^2$ \\
-Minkowski $\mathbb{M}^4$ & $\mathcal{R}_{\text{Hessian}}$ & None & $\frac{1}{2}(t^2 - x^2 - y^2 - z^2)$ \\
+Minkowski $\mathbb{M}^4$ (Lorentzian) & $\mathcal{R}_{\text{Hessian}}$ & None & $\frac{1}{2}(t^2 - x^2 - y^2 - z^2)$ \\
 Poincaré Half-Plane & $\mathcal{R}_{\text{Conf}}$ & Euclidean $\delta_{ij}$ & $\ln(R) - \ln(y)$ \\
 Stereographic Sphere & $\mathcal{R}_{\text{Conf}}$ & Euclidean $\delta_{ij}$ & $\ln(2R^2) - \ln(R^2+r^2)$ \\
 Flat Torus $\mathbb{T}^2$ & $\mathcal{R}_{\text{Grad}}$ & Euclidean $\delta_{ij}$ & $x^1$ (linear) \\ \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{remark}[A degenerate table entry]
+In Table~\ref{tab:geometries}, the Flat Torus row is intentionally simple: for the linear seam $s=x^1$ on a flat background one has $|\nabla s|_h\equiv 1$, so the gradient rule yields $g=|\nabla s|_h^2\,h=h$. Nontrivial behavior under $\mathcal{R}_{\text{Grad}}$ requires a seam with nonconstant gradient magnitude (and, if one wants a genuine Riemannian metric everywhere, bounded away from zero).
+\end{remark}
+
+\begin{remark}[Pseudo-Riemannian outputs are out of scope]
+The Minkowski example in Table~\ref{tab:geometries} is included only as an illustrative reminder that seam rules can generate familiar tensors: for $s=\tfrac12(t^2-x^2-y^2-z^2)$ one has $\nabla^2 s=\mathrm{diag}(1,-1,-1,-1)$, which is \emph{not} positive definite. The present paper focuses on (local) Riemannian metrics produced where the generated tensor is positive definite; extending the framework systematically to pseudo-Riemannian metrics is an interesting direction but is not pursued here.
+\end{remark}
 
 \emph{Remark:} The framework easily recovers classical topological and relativistic results. For instance, applying a piecewise local $\mathcal{R}_{\text{Hessian}}$ stitched by $\mathcal{R}_{\text{Conf}}$ to a Morse seam with two critical points reconstructs Reeb's Sphere Theorem \cite{Milnor1963}. Similarly, applying a generalized Warped-Product rule to a generic radial seam recovers Birkhoff's Theorem for spherically symmetric vacuum solutions \cite{Wald1984}.
 
@@ -203,10 +218,10 @@ On a graph $G=(V,E)$ with background edge lengths $\ell_0(u,v)$, the seam $s: V 
     $w(u,v) = \ell_0(u,v) \frac{|\nabla s|(u) + |\nabla s|(v)}{2}$
 \end{enumerate}
 
-These constructions are closely related to discrete conformal geometry and conformal parameterizations of triangle meshes; see, e.g., \cite{SpringbornSchroederPinkall2008,GuLuoSunWu2018}.
+These constructions are closely related to discrete conformal geometry and conformal parameterizations of triangle meshes; see, e.g., \cite{SpringbornSchroederPinkall2008,GuLuoSunWu2018}. They also connect to circle-packing/combinatorial Ricci flow viewpoints on discrete conformal scaling \cite{ChowLuo2003} and to related conformal-type transformations such as spin transformations \cite{CranePinkallSchroeder2013}.
 
 
-\section{Continuous Geometry: Curvature and Universality}
+\section{Continuous Geometry: Curvature Identities}
 
 Framing continuous geometry in terms of seams often reduces complex tensor algebra to elegant scalar identities.
 
@@ -224,16 +239,8 @@ Let \(M\) be a smooth manifold equipped with a torsion-free connection \(\nabla\
 Positive definiteness is an open condition: since \(q\mapsto g_q\) varies smoothly, there exists a neighborhood \(U\ni p\) such that \(g_q\) remains positive definite for all \(q\in U\). On \(U\), \(g\) is therefore a smooth Riemannian metric.
 \end{proof}
 
-\begin{conjecture}\label{conj:universality}
-Fix a compact smooth manifold $M$. The set of metrics generated by composed rules of the form
-\[
-g = \mathcal{R}_{\text{Conf}}\!\left(s ; \mathcal{R}_{\text{Hessian}}(t)\right)= e^{2s}\,\nabla^2 t
-\]
-(for suitable seams $s,t$ and a fixed torsion-free connection $\nabla$) is dense in the space of smooth Riemannian metrics on $M$ (for a chosen topology, e.g.\ $C^k$).
-\end{conjecture}
-\begin{remark}
-A naive constructive proof using a partition of unity fails because the derivatives of the bump functions (e.g., $\operatorname{Hess}(\rho_i) t_i$) scale as $O(1)$ and do not vanish under refinement. A rigorous proof of this universality likely requires the application of Gromov's $h$-principle for open differential relations.
-\end{remark}
+\paragraph{An open universality question.}
+Beyond curvature identities, it is natural to ask whether composed scalar rules can approximate \emph{arbitrary} Riemannian metrics in a suitable topology. We record one such universality conjecture as an explicit open problem in the conclusion.
 
 \section{Discrete Geometry and Computation}
 
@@ -243,6 +250,10 @@ The true advantage of the seam framework is algorithmic. In this climax section,
 
 \begin{lemma}[Vertex-path approximation of geodesics]\label{lem:path-approx}
 Let $(M,g_0)$ be compact and let $\{G_n=(V_n,E_n)\}$ be a shape-regular, quasi-uniform triangulation sequence with mesh size $h_n\to 0$ and background edge lengths $\ell_0$ induced by $g_0$. Fix points $x,y\in M$ and choose vertices $u_n,v_n\in V_n$ with $d_{g_0}(u_n,x)\le h_n$ and $d_{g_0}(v_n,y)\le h_n$.
+Assume in addition that the 1-skeleton is an \emph{asymptotically geodesic spanner} for $(M,g_0)$ in the sense that there exists a constant $C_{\mathrm{span}}$ (independent of $n$) such that for all sufficiently large $n$ and all vertices $a,b\in V_n$ there exists a vertex path $P$ from $a$ to $b$ with
+\[
+L_0(P)\le (1+C_{\mathrm{span}}\,h_n)\,d_{g_0}(a,b).
+\]
 Then there exists a vertex path $P_n$ in $G_n$ from $u_n$ to $v_n$ such that its background length satisfies
 \[
 L_{0}(P_n)\le d_{g_0}(x,y)+C h_n,
@@ -250,23 +261,21 @@ L_{0}(P_n)\le d_{g_0}(x,y)+C h_n,
 where $C$ depends only on the mesh regularity and $(M,g_0)$.
 \end{lemma}
 \begin{proof}
-Let $\gamma:[0,L]\to M$ be a minimizing $g_0$-geodesic from $x$ to $y$ (existence holds since $M$ is compact). For each $n$, let $\mathcal{T}_n$ be the triangulation with vertex set $V_n$ and let $h_n$ be the maximum diameter of a simplex.
-
-Partition $[0,L]$ into subintervals $0=t_0<t_1<\dots<t_m=L$ with $t_{i+1}-t_i\le h_n$. For each $i$, pick a vertex $p_i\in V_n$ such that $d_{g_0}(p_i,\gamma(t_i))\le h_n$ (possible by quasi-uniformity). Then $p_0$ can be chosen as $u_n$ and $p_m$ as $v_n$ by the assumed proximity of $u_n,v_n$ to $x,y$.
-
-Since $\gamma(t_i)$ and $\gamma(t_{i+1})$ are at $g_0$-distance $\le h_n$ and each is within $h_n$ of $p_i,p_{i+1}$, the triangle inequality gives
+By the triangle inequality,
 \[
-d_{g_0}(p_i,p_{i+1}) \le d_{g_0}(p_i,\gamma(t_i)) + d_{g_0}(\gamma(t_i),\gamma(t_{i+1})) + d_{g_0}(\gamma(t_{i+1}),p_{i+1})
-\le (t_{i+1}-t_i) + 2h_n.
+d_{g_0}(u_n,v_n)\le d_{g_0}(u_n,x)+d_{g_0}(x,y)+d_{g_0}(y,v_n)\le d_{g_0}(x,y)+2h_n.
 \]
-Because $\mathcal{T}_n$ is shape-regular and quasi-uniform, there exists a constant $c\ge 1$ (independent of $n$) such that whenever $d_{g_0}(p_i,p_{i+1})\le 3h_n$, there is an edge path in the 1-skeleton from $p_i$ to $p_{i+1}$ of total background length $\le c\,d_{g_0}(p_i,p_{i+1})$ (this follows from bounded aspect ratios and local connectivity of the 1-skeleton). Concatenating these short paths over $i=0,\dots,m-1$ yields a vertex path $P_n$ from $u_n$ to $v_n$ with
+By the spanner assumption applied to $(a,b)=(u_n,v_n)$, there exists a vertex path $P_n$ from $u_n$ to $v_n$ such that
 \[
-L_0(P_n)\le c\sum_{i=0}^{m-1} d_{g_0}(p_i,p_{i+1})
-\le c\sum_{i=0}^{m-1}\bigl((t_{i+1}-t_i)+2h_n\bigr)
-= cL + 2c m h_n.
+L_0(P_n)\le (1+C_{\mathrm{span}}\,h_n)\,d_{g_0}(u_n,v_n)
+\le (1+C_{\mathrm{span}}\,h_n)\,(d_{g_0}(x,y)+2h_n).
 \]
-Since $m\le L/h_n + 1$, we get $L_0(P_n)\le cL + 2c(L+h_n)\le L + C h_n$ after absorbing constants into $C$ (and noting $L=d_{g_0}(x,y)$).
+Since $M$ is compact, $d_{g_0}(x,y)\le \mathrm{diam}(M,g_0)$, so the right-hand side is bounded by $d_{g_0}(x,y)+C h_n$ for a constant $C$ independent of $n$.
 \end{proof}
+
+\begin{remark}[On the spanner assumption]
+The spanner hypothesis in Lemma~\ref{lem:path-approx} is the precise technical condition needed to convert continuous $g_0$-geodesic distances into comparable \emph{edge-path} distances on the 1-skeleton with an $O(h_n)$ error. Shape-regularity and quasi-uniformity alone ensure sampling/coverage properties, but without a spanner-type assumption one may only obtain a mesh-dependent \emph{multiplicative} distortion between graph shortest-path length and $d_{g_0}$.
+\end{remark}
 
 \begin{lemma}[Trapezoidal consistency of the conformal edge rule]\label{lem:trap}
 Let $s\in C^2(M)$ and let $\gamma:[0,L]\to M$ be a unit-speed ($g_0$) geodesic segment. For a subsegment of length $\ell\le h$ with endpoints $p=\gamma(t_0)$ and $q=\gamma(t_0+\ell)$, define the trapezoidal approximation
@@ -285,12 +294,27 @@ This is the standard trapezoidal error estimate for $C^2$ functions: if $f(t):=e
 
 \begin{theorem}[Discrete-to-continuum limit via correspondences]\label{thm:gh-limit}
 Let $(M,g_0)$ be a compact Riemannian manifold and $s \in C^2(M)$. Let $\{G_n = (V_n, E_n)\}$ be a sequence of shape-regular, quasi-uniform triangulations with mesh size $h_n \to 0$. Let the discrete conformal graph metric $d_n$ be generated by $\mathcal{R}_{\text{Graph-Exp } s}$ evaluated on $V_n$. 
-Then the Gromov--Hausdorff distance between $(V_n,d_n)$ and $(M,d_g)$ satisfies $d_{GH}\bigl((V_n,d_n),(M,d_g)\bigr)=O(h_n)$, where $g:=e^{2s}g_0$ and $d_g$ is the induced geodesic distance on $M$.
+Assume the asymptotically geodesic spanner property stated in Lemma~\ref{lem:path-approx} holds for the 1-skeleton with respect to $d_{g_0}$.
+Then the Gromov--Hausdorff distance between $(V_n,d_n)$ and $(M,d_g)$ satisfies $d_{GH}\bigl((V_n,d_n),(M,d_g)\bigr)=O(h_n)$ (see, e.g., \cite{BuragoBuragoIvanov2001}), where $g:=e^{2s}g_0$ and $d_g$ is the induced geodesic distance on $M$.
 \end{theorem}
 \begin{proof}
 Define a correspondence $\mathcal{C}_n\subset V_n\times M$ by pairing each vertex $u\in V_n$ with itself viewed as a point in $M$, i.e.\ $\mathcal{C}_n:=\{(u,u):u\in V_n\}$. Since $V_n$ is an $h_n$-net in $M$ (by quasi-uniformity), every $x\in M$ lies within $g_0$-distance $\le h_n$ of some $u\in V_n$, hence within $g$-distance $\le e^{\|s\|_\infty}h_n$ of some vertex as well. Thus $\mathcal{C}_n$ is an $O(h_n)$-surjective correspondence.
 
-To bound the distortion, fix $u,v\in V_n$. By Lemma~\ref{lem:path-approx}, there exists a vertex path in the 1-skeleton whose $g_0$-length exceeds $d_{g_0}(u,v)$ by at most $O(h_n)$. Applying Lemma~\ref{lem:trap} edgewise shows that the corresponding discrete conformal length differs from the continuous conformal line integral by at most $O(h_n^2)$ along that path, hence $d_n(u,v)\le d_g(u,v)+O(h_n)$. Conversely, comparing a discrete shortest path to a minimizing $g$-geodesic yields $d_g(u,v)\le d_n(u,v)+O(h_n)$. Therefore
+To bound the distortion, fix $u,v\in V_n$. By Lemma~\ref{lem:path-approx} (with $x=u$ and $y=v$), there exists a vertex path in the 1-skeleton from $u$ to $v$ with background length
+\[
+L_0(P_n)\le d_{g_0}(u,v)+O(h_n).
+\]
+Applying Lemma~\ref{lem:trap} edgewise along this path shows that the discrete conformal length of the path differs from the $g$-length of the corresponding piecewise-$g_0$-geodesic curve by at most $O(h_n^2)$, hence $d_n(u,v)\le d_g(u,v)+O(h_n)$.
+
+For the reverse inequality, let $\widehat{P}_n=(p_0=u,\dots,p_m=v)$ be a \emph{discrete shortest path} attaining $d_n(u,v)=\sum_{i=0}^{m-1} w(p_i,p_{i+1})$. Form a continuous curve $\widehat{\Gamma}_n$ by concatenating the $g_0$-geodesic segments joining each $(p_i,p_{i+1})$. Then
+\[
+d_g(u,v)\le L_g(\widehat{\Gamma}_n)=\sum_{i=0}^{m-1}\int_{p_i}^{p_{i+1}} e^{s}\,\diff \ell_0.
+\]
+Lemma~\ref{lem:trap} applied to each edge segment (with $\ell_0(p_i,p_{i+1})=O(h_n)$) gives
+\[
+\int_{p_i}^{p_{i+1}} e^{s}\,\diff \ell_0 \le \ell_0(p_i,p_{i+1})\,\frac{e^{s(p_i)}+e^{s(p_{i+1})}}{2} + O(h_n^3)=w(p_i,p_{i+1})+O(h_n^3).
+\]
+Summing over $i$ and using $m=O(1/h_n)$ yields $L_g(\widehat{\Gamma}_n)\le d_n(u,v)+O(h_n)$, hence $d_g(u,v)\le d_n(u,v)+O(h_n)$. Therefore
 \[
 \sup_{u,v\in V_n}\bigl|d_n(u,v)-d_g(u,v)\bigr|\le C h_n.
 \]
@@ -303,13 +327,17 @@ While limits are mathematically satisfying, algorithms require quantitative boun
 Under the assumptions of Theorem~\ref{thm:gh-limit}, assume in addition that:
 \begin{enumerate}
     \item for the pairs of points under consideration, minimizing $g$-geodesics are unique and stay a fixed distance away from the cut locus (so the minimizing curves vary continuously with endpoints), and
-    \item the triangulations are shape-regular and quasi-uniform with constants independent of $n$ (so that local 1-skeleton detours have uniformly bounded stretch, as used in Lemma~\ref{lem:path-approx}).
+  \item the 1-skeleton satisfies the asymptotically geodesic spanner property from Lemma~\ref{lem:path-approx} (so that edge paths approximate $d_{g_0}$ up to an $O(h_n)$ relative error).
 \end{enumerate}
 Then there exists a constant $C > 0$ (depending on bounds of $s$, $\nabla s$, $\operatorname{Hess} s$, and the mesh regularity) such that the discrete metric satisfies an $O(h_n)$ error bound relative to the continuous metric:
 \begin{equation}
 \sup_{u,v \in V_n} | d_n(u,v) - d_{e^{2s}g_0}(u,v) | \le C h_n
 \end{equation}
 \end{theorem}
+
+\begin{remark}[On the cut locus assumption]
+The uniqueness/away-from-cut-locus hypothesis is strong: it rules out endpoint pairs for which multiple minimizing $g$-geodesics compete or where the minimizing curve changes discontinuously under small perturbations. It is included here to justify a \emph{uniform} $O(h_n)$ bound stated as a supremum over vertex pairs; relaxing it typically requires either restricting to pairs avoiding the cut locus, working with local/one-sided estimates, or accepting weaker (e.g., measure-theoretic) error statements.
+\end{remark}
 \begin{proof}
 Fix vertices $u,v\in V_n$ and let $x=u$, $y=v$ be viewed as points of $M$. Let $\gamma$ be a minimizing $g$-geodesic from $x$ to $y$ (under the additional hypotheses stated in the theorem).
 By Lemma~\ref{lem:path-approx} (applied to $g_0$) there exists a vertex path $P_n=(p_0=u,\dots,p_m=v)$ whose background length satisfies $L_0(P_n)\le d_{g_0}(x,y)+C h_n$.
@@ -329,8 +357,9 @@ Let $G = (V, E)$ be a triangulated mesh (or any connected, non-bipartite graph) 
 can be found by solving a strictly convex quadratic program in the variables $X_u := e^{s(u)} > 0$.
 \end{theorem}
 \begin{proof}
-Under the substitution $X_u = e^{s(u)}$, the energy $\mathcal{E}(X)$ becomes a quadratic function $\frac{1}{2}X^T H X - C^T X + K$. The Hessian $H$ of this polynomial has diagonal entries $\sum_{v\sim u} \ell_0^2(u,v)/4$ and off-diagonal entries $\ell_0^2(u,v)/4$. This matrix $H$ is exactly proportional to the \emph{Signless Laplacian} $Q = D + A$ of the weighted graph.
-In spectral graph theory, the signless Laplacian of a connected graph is strictly positive definite ($H \succ 0$) if and only if the graph contains an odd cycle (i.e., is non-bipartite) \cite{Chung1997}. Because a triangulation consists of 3-cycles, $H \succ 0$. Therefore, $\mathcal{E}(X)$ is strictly convex, guaranteeing that gradient descent or a linear solve will efficiently find a unique global minimum $s^* = \ln X^*$, completely avoiding local minima.
+Under the substitution $X_u = e^{s(u)}$, the energy $\mathcal{E}(X)$ becomes a quadratic function $\frac{1}{2}X^T H X - C^T X + K$. The Hessian $H$ of this polynomial has diagonal entries $\sum_{v\sim u} \ell_0^2(u,v)/4$ and off-diagonal entries $\ell_0^2(u,v)/4$. This matrix $H$ is exactly proportional to the \emph{signless Laplacian} $Q = D + A$ of the weighted graph.
+
+The spectral characterization we use here is classical: for a connected graph, the signless Laplacian $Q$ is positive definite (equivalently, its smallest eigenvalue is $>0$) if and only if the graph is non-bipartite (contains an odd cycle) \cite{Desai1994,CvetkovicRowlinsonSimic2007}; see also \cite{Chung1997} for general spectral-graph background. Our contribution is not this spectral fact, but the observation that the conformal graph rule makes inverse edge-weight fitting reduce \emph{exactly} to such a quadratic form in $X=e^s$, yielding a practically solvable strictly convex program on non-bipartite graphs. Because a triangulation contains 3-cycles, it is non-bipartite and thus $H \succ 0$ in that case. Therefore, $\mathcal{E}(X)$ is strictly convex, guaranteeing a unique global minimum $s^* = \ln X^*$.
 \end{proof}
 
 \begin{remark}[Positivity constraint]
@@ -371,9 +400,13 @@ Finally, we prove that our specific arithmetic graph rule perfectly captures con
 \begin{theorem}\label{thm:discrete_curvature}
 Let $G=(V,E)$ be a triangulated surface with background lengths $\ell_0$. Let $K_s(u) = 2\pi - \sum \theta_t$ be the discrete Gaussian curvature (angle defect) induced by the seam-generated edge lengths $\ell_s(u,v) = \ell_0(u,v) \frac{e^{s(u)}+e^{s(v)}}{2}$. The Jacobian of the curvature with respect to the seam, evaluated at $s=0$, is exactly:
 \begin{equation}
-\left. \frac{\partial K_s(u)}{\partial s(v)} \right|_{s=0} = - \frac{1}{2} L_{uv}^{\text{cot}}
+\left. \frac{\partial K_s(u)}{\partial s(v)} \right|_{s=0} = L_{uv}^{\text{cot}}
 \end{equation}
-where $L_{uv}^{\text{cot}}$ is the standard cotangent Laplacian matrix.
+where $L_{uv}^{\text{cot}}$ is the cotangent Laplacian matrix with off-diagonal convention
+\[
+L_{uv}^{\text{cot}}:=-\tfrac12\bigl(\cot\alpha_{uv}+\cot\beta_{uv}\bigr)\quad (u\neq v),
+\]
+in which $\alpha_{uv}$ and $\beta_{uv}$ denote the angles \emph{opposite} the edge $(u,v)$ in the two incident triangles (and $L_{uu}^{\text{cot}}:=-\sum_{v\neq u} L_{uv}^{\text{cot}}$).
 \end{theorem}
 \begin{proof}
 We sketch the local computation around an interior edge $(u,v)$ shared by two Euclidean triangles $(u,v,a)$ and $(u,v,b)$ in the seam-generated metric.
@@ -408,10 +441,10 @@ Using the area formula $2A = a'b'\sin\theta_a$ and the identity $\cot\theta_u = 
 \begin{equation}\label{eq:dtheta-cot}
 \frac{\partial \theta_a}{\partial c} = \frac{\cot\theta_u+\cot\theta_v}{c}.
 \end{equation}
-(This is a classical computation in discrete differential geometry; it is consistent with the cotangent Laplacian weights.)
+(Here $\theta_u$ and $\theta_v$ are the angles at the vertices $u$ and $v$ in the same triangle $(u,v,a)$; this type of cotangent-weight formula is standard in discrete differential geometry, see e.g.\ \cite{PinkallPolthier1993,BobenkoSpringborn2007}.)
 
 \emph{Step 3: assemble curvature derivatives.}
-Let $\alpha=\theta_a$ and $\beta=\theta_b$ be the angles opposite the edge $(u,v)$ in the two adjacent triangles $(u,v,a)$ and $(u,v,b)$.
+Let $\alpha$ denote the angle at the third vertex $a$ in triangle $(u,v,a)$, and let $\beta$ denote the angle at the third vertex $b$ in triangle $(u,v,b)$. Equivalently, $\alpha$ and $\beta$ are the two angles \emph{opposite} the shared edge $(u,v)$.
 The curvature at $u$ is $K_s(u)=2\pi-\sum_{t\ni u}\theta_t(u)$, i.e., minus the sum of angles at $u$ in incident triangles.
 Varying $s(v)$ changes only the lengths of edges incident to $v$, hence only angles in triangles incident to $v$, and in particular affects $K_s(u)$ only if $u$ and $v$ share an edge.
 For an interior edge $(u,v)$ with opposite angles $\alpha$ and $\beta$ in the two incident triangles, combining the chain rule with \eqref{eq:dtheta-cot} and the seam-to-length derivative from Step~1 gives
@@ -419,102 +452,46 @@ For an interior edge $(u,v)$ with opposite angles $\alpha$ and $\beta$ in the tw
 \left.\frac{\partial K_s(u)}{\partial s(v)}\right|_{s=0}
 = -\frac{1}{2}\bigl(\cot\alpha+\cot\beta\bigr),
 \]
-which matches the off-diagonal cotangent Laplacian convention $L^{\text{cot}}_{uv}=-(\cot\alpha+\cot\beta)$.
+which is exactly the off-diagonal entry $L^{\text{cot}}_{uv}$ under the convention stated in the theorem.
 This yields the stated identity.
 \end{proof}
 
-\subsection{Numerical Validation (synthetic experiment)}
+\subsection{Numerical Validation}
 \label{sec:numerics}
 
-To complement the theoretical results, we outline a minimal synthetic validation that can be reproduced on standard triangle meshes. Let $M$ be a sphere or torus mesh with background edge lengths $\ell_0$ and pick a ground-truth seam $s_{\mathrm{gt}}:V\to\R$. Generate ground-truth edge weights by the conformal graph rule
-\[
-w_{\mathrm{gt}}(u,v)=\ell_0(u,v)\frac{e^{s_{\mathrm{gt}}(u)}+e^{s_{\mathrm{gt}}(v)}}{2},
-\]
-and form a noisy target $w^*(u,v)=w_{\mathrm{gt}}(u,v)\,(1+\sigma\,\xi_{uv})$ where $\xi_{uv}$ are i.i.d.\ zero-mean perturbations and $\sigma$ controls the noise level.
+To complement the theoretical results, we validate the inverse-design quadratic program (Theorem~\ref{thm:inverse_seam}) on random geometric graphs. The reference implementation is publicly available at \url{https://github.com/Roenbaeck/seams}.
 
-We then solve the inverse-design quadratic program of Theorem~\ref{thm:inverse_seam} to obtain $X^*$ and $s^*=\ln X^*$. The quality of recovery can be measured by (i) edge-weight fit error $\|w(X^*)-w^*\|_2/\|w^*\|_2$, (ii) curvature error $\|K_{s^*}-K_{s_{\mathrm{gt}}}\|_2/\|K_{s_{\mathrm{gt}}}\|_2$ (angle defects), and (iii) path distortion statistics comparing discrete shortest paths under $\ell_{s^*}$ to those under $\ell_{s_{\mathrm{gt}}}$. In practice, Theorem~\ref{thm:inverse_seam_stability} predicts stability of $X^*$ with respect to perturbations in the targets via $\lambda_{\min}(H)$.
+We generate graphs with $n \in \{10^2, 10^3, 10^4, 10^5\}$ vertices and assign a ground-truth seam $s_{\mathrm{gt}}$. Ground-truth edge weights $w_{\mathrm{gt}}$ are generated via the conformal graph rule. We then form noisy target weights $w^*(u,v) = w_{\mathrm{gt}}(u,v)(1 + \sigma \xi_{uv})$, where $\xi_{uv}$ is uniform noise and $\sigma \in [0, 0.20]$ controls the noise level. We solve the strictly convex QP to recover the optimal seam $s^*$ and its induced weights $w_{\mathrm{opt}}$.
 
-\begin{figure}[t]
+Table~\ref{tab:validation} summarizes the results. The optimization consistently denoises the metric: for instance, at $n=10^5$ and $\sigma=0.10$, the noisy weights deviate from the truth by $10.0\%$, but the recovered weights $w_{\mathrm{opt}}$ reduce this error to $5.3\%$. This denoising effect extends to the induced shortest-path metric, where the mean relative path error drops from $5.4\%$ (noisy) to $2.4\%$ (recovered). Furthermore, finite-difference checks confirm that the analytical derivatives and Hessian match the numerical ones to high precision (relative error $\sim 10^{-8}$), validating the exactness of the quadratic formulation.
+
+\begin{table}[ht]
 \centering
-\begin{tikzpicture}[
-  scale=0.95,
-  vtx/.style={circle, draw=black, fill=white, inner sep=1.2pt, font=\scriptsize},
-  ed/.style={draw=black, line width=0.6pt},
-  path/.style={draw=black, line width=1.1pt},
-  lab/.style={font=\scriptsize},
-  ann/.style={font=\scriptsize, align=left}
-]
-% --- Panel (a): synthetic triangulated patch with seam values ---
-\begin{scope}
-  \node[lab] at (1.75,2.75) {(a) seam on a patch};
-  % vertices
-  \node[vtx] (p00) at (0.0,0.0) {};
-  \node[vtx] (p10) at (1.0,0.0) {};
-  \node[vtx] (p20) at (2.0,0.0) {};
-  \node[vtx] (p30) at (3.0,0.0) {};
-  \node[vtx] (p01) at (0.5,0.85) {};
-  \node[vtx] (p11) at (1.5,0.85) {};
-  \node[vtx] (p21) at (2.5,0.85) {};
-  \node[vtx] (p02) at (1.0,1.70) {};
-  \node[vtx] (p12) at (2.0,1.70) {};
-  \node[vtx] (p03) at (1.5,2.45) {};
+\caption{Numerical validation of inverse seam design. The optimization recovers edge weights ($w_{\mathrm{opt}}$) that are significantly closer to the ground truth ($w_{\mathrm{gt}}$) than the noisy targets ($w^*$), and similarly improves shortest-path distances.}
+\label{tab:validation}
+\small
+\begin{tabular}{@{}rrcccccc@{}}
+\toprule
+$n$ & $|E|$ & $\sigma$ & \multicolumn{2}{c}{Weight Error (to $w_{\mathrm{gt}}$)} & \multicolumn{2}{c}{Path Error (Mean Rel.)} & $R^2$ \\
+\cmidrule(lr){4-5} \cmidrule(lr){6-7}
+& & & Noisy $w^*$ & Recov. $w_{\mathrm{opt}}$ & Noisy & Recov. & \\
+\midrule
+100 & 286 & 0.05 & 0.053 & 0.034 & 0.018 & 0.019 & 0.979 \\
+100 & 286 & 0.10 & 0.107 & 0.068 & 0.034 & 0.035 & 0.914 \\
+100 & 286 & 0.20 & 0.213 & 0.136 & 0.073 & 0.071 & 0.122 \\
+\midrule
+10,000 & 46,229 & 0.05 & 0.050 & 0.026 & 0.017 & 0.008 & 0.993 \\
+10,000 & 46,229 & 0.10 & 0.099 & 0.053 & 0.050 & 0.023 & 0.974 \\
+10,000 & 46,229 & 0.20 & 0.198 & 0.105 & 0.144 & 0.067 & 0.900 \\
+\midrule
+100,000 & 461,789 & 0.05 & 0.050 & 0.027 & 0.018 & 0.008 & 0.993 \\
+100,000 & 461,789 & 0.10 & 0.100 & 0.053 & 0.054 & 0.024 & 0.974 \\
+100,000 & 461,789 & 0.20 & 0.200 & 0.106 & 0.156 & 0.073 & 0.898 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-  % edges (triangulation)
-  \foreach \a/\b in {p00/p10,p10/p20,p20/p30,p00/p01,p10/p01,p10/p11,p20/p11,p20/p21,p30/p21,p01/p11,p11/p21,p01/p02,p11/p02,p11/p12,p21/p12,p02/p12,p02/p03,p12/p03} {
-    \draw[ed] (\a) -- (\b);
-  }
-  % diagonals to form triangles
-  \foreach \a/\b in {p00/p10,p10/p11,p11/p20,p20/p21,p21/p30,p01/p10,p11/p10,p11/p20,p21/p20,p02/p11,p12/p11,p03/p02,p03/p12} {
-    % (already covered; keep minimal)
-  }
-
-  % annotate a few seam values (black/white: numeric labels)
-  \node[ann, anchor=west] at (3.25,2.05) {$s_{\mathrm{gt}}$ values};
-  \node[ann, anchor=west] at (3.25,1.75) {$s(p00)=-0.6$};
-  \node[ann, anchor=west] at (3.25,1.50) {$s(p11)=\phantom{-}0.0$};
-  \node[ann, anchor=west] at (3.25,1.25) {$s(p03)=\phantom{-}0.7$};
-\end{scope}
-
-% --- Panel (b): shortest path under recovered metric and curvature error bars ---
-\begin{scope}[xshift=8.0cm]
-  \node[lab] at (1.75,2.75) {(b) recovered paths / curvature};
-  % a slightly perturbed patch (so panels are visually distinct)
-  \node[vtx] (q00) at (0.0,0.0) {};
-  \node[vtx] (q10) at (1.05,0.05) {};
-  \node[vtx] (q20) at (2.05,-0.02) {};
-  \node[vtx] (q30) at (3.05,0.07) {};
-  \node[vtx] (q01) at (0.55,0.92) {};
-  \node[vtx] (q11) at (1.58,0.78) {};
-  \node[vtx] (q21) at (2.55,0.98) {};
-  \node[vtx] (q02) at (1.10,1.62) {};
-  \node[vtx] (q12) at (2.05,1.78) {};
-  \node[vtx] (q03) at (1.65,2.42) {};
-
-  \foreach \a/\b in {q00/q10,q10/q20,q20/q30,q00/q01,q10/q01,q10/q11,q20/q11,q20/q21,q30/q21,q01/q11,q11/q21,q01/q02,q11/q02,q11/q12,q21/q12,q02/q12,q02/q03,q12/q03} {
-    \draw[ed] (\a) -- (\b);
-  }
-
-  % two representative shortest paths (solid vs dashed)
-  \draw[path] (q00) -- (q10) -- (q11) -- (q12) -- (q03);
-  \draw[path, dashed] (q00) -- (q01) -- (q02) -- (q03);
-
-  % tiny "curvature error" bar chart sketch
-  \begin{scope}[yshift=0.1cm, xshift=3.55cm]
-    \node[ann, anchor=west] at (0.0,2.05) {curvature error};
-    \draw[ed] (0.0,0.3) -- (0.0,1.8);
-    \draw[ed] (0.0,0.3) -- (1.6,0.3);
-    \foreach \x/\h in {0.25/0.5,0.55/0.9,0.85/0.4,1.15/0.7,1.45/0.3} {
-      \draw[ed] (\x,0.3) rectangle ++(0.18,\h);
-    }
-    \node[ann, anchor=west] at (0.0,0.0) {\(\|K_{s^*}-K_{s_{\mathrm{gt}}}\|\)};
-  \end{scope}
-\end{scope}
-\end{tikzpicture}
-\caption{Synthetic numerical validation schematic (black/white): (a) a triangulated patch with example seam values \(s_{\mathrm{gt}}\); (b) a representative shortest path under the recovered metric \(\ell_{s^*}\) and a sketch of curvature error statistics.}
-\label{fig:numerics}
-\end{figure}
-
-\section{Conclusion and Open Problems}
+\section{Conclusion and Open Problems}\label{sec:conclusion-open-problems}
 
 Seam-Driven Geometry reframes continuous and discrete metric spaces as the structured output of scalar functions. In geometry processing terms, the seam is not merely a parameterization: it is a stable interface between continuous differential-geometric objectives and discrete optimization primitives.
 
@@ -526,7 +503,8 @@ The theorems established here open immediate applications in machine learning an
     \item \textbf{Graph Neural Network (GNN) Rewiring:} A major bottleneck in GNNs is "oversquashing," where information chokes at structural bottlenecks. Standard rewiring destroys topology. Our Conformal Graph Rule allows a neural network to learn a seam $s$ that dynamically "stretches" bottlenecks (altering edge weights to increase local flow) while rigorously preserving the original topological adjacency and spectral validity of the graph.
 \end{itemize}
 
-Future work will focus on establishing $h$-principle proofs for the generative universality conjecture, and extending the discrete optimal transport ($\mathcal{R}_{\text{OT}}$) rules to dynamic multi-agent pathfinding.
+\paragraph{Future Work.}
+Future work will focus on extending the discrete optimal transport ($\mathcal{R}_{\text{OT}}$) rules to dynamic multi-agent pathfinding, and exploring whether sums of composed seam rules can act as universal approximators for smooth metrics.
 
 \begin{remark}[Differentiable seam learning and GNN rewiring]
 For learning-based pipelines, a seam $s_\theta$ produced by a neural network can be optimized end-to-end by differentiating through a \emph{relaxed} shortest-path layer (e.g., via log-sum-exp/softmin path energies or entropic optimal transport relaxations). The seam parameterization provides a low-dimensional, geometry-aware control knob: backpropagated gradients update $s$ while preserving the underlying adjacency, and Theorem~\ref{thm:inverse_seam_stability} gives a linear-algebraic handle on conditioning when the edge-fitting objective is used as a loss.
@@ -579,6 +557,16 @@ F. R. K. Chung,
 \textit{Spectral Graph Theory},
 American Mathematical Society, 1997.
 
+\bibitem{Desai1994}
+M. Desai and V. Rao,
+``A characterization of the smallest eigenvalue of a graph,''
+\textit{Journal of Graph Theory} \textbf{18}(2), 181--194 (1994).
+
+\bibitem{CvetkovicRowlinsonSimic2007}
+D. Cvetkovi\'c, P. Rowlinson, and S. K. Simi\'c,
+``Signless Laplacians of finite graphs,''
+\textit{Linear Algebra and its Applications} \textbf{423}, 155--171 (2007).
+
 \bibitem{BobenkoSpringborn2007}
 A. I. Bobenko and B. A. Springborn,
 ``A discrete Laplace--Beltrami operator for simplicial surfaces,''
@@ -608,6 +596,11 @@ U. Pinkall and K. Polthier,
 B. Chow and F. Luo,
 ``Combinatorial Ricci flows on surfaces,''
 \textit{Journal of Differential Geometry} \textbf{63}, 97--129 (2003).
+
+\bibitem{Stephenson2005}
+K. Stephenson,
+\textit{Introduction to Circle Packing: The Theory of Discrete Analytic Functions},
+Cambridge University Press, 2005.
 
 \end{thebibliography}
 
