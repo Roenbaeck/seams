@@ -460,6 +460,40 @@ Theorem~\ref{thm:inverse_seam_stability} is stated for the unconstrained quadrat
 From a modeling perspective, persistent active constraints (many vertices with $X_u$ pinned at the boundary) are a diagnostic that the targets $w^*$ are far from the realizable set of seam-generated edge weights, or that additional regularization/prior information on $s$ is needed to avoid metric degeneracy.
 \end{remark}
 
+Beyond shortest-path metrics, the same seam rule can be used to reweight \emph{conductances} in a graph Laplacian, which underlies diffusion/heat-kernel constructions, spectral embeddings, and many message-passing (GNN) architectures. The next lemma records a simple but useful robustness statement: a bounded seam perturbs the Laplacian only by a multiplicative PSD sandwich, yielding immediate eigenvalue stability.
+
+\begin{lemma}[Spectral stability of seam-reweighted Laplacians]\label{lem:spectral-stability}
+Let $G=(V,E)$ be a connected undirected graph with symmetric base edge weights (conductances) $a_0(u,v)=a_0(v,u)>0$ on $E$.
+Given a seam $s:V\to\R$, define seam-reweighted conductances
+\[
+a_s(u,v):=a_0(u,v)\,\frac{e^{s(u)}+e^{s(v)}}{2},\qquad (u,v)\in E.
+\]
+Let $L_0,L_s$ be the corresponding \emph{unnormalized} weighted graph Laplacians, i.e.
+\[
+f^\top L_s f = \tfrac12\sum_{(u,v)\in E} a_s(u,v)\,(f(u)-f(v))^2\qquad\text{for all }f\in\R^{|V|}.
+\]
+If $M:=\|s\|_\infty$, then
+\[
+e^{-M}L_0\preceq L_s\preceq e^{M}L_0.
+\]
+In particular, the algebraic connectivity (spectral gap) satisfies
+\[
+e^{-M}\,\lambda_2(L_0)\le \lambda_2(L_s)\le e^{M}\,\lambda_2(L_0).
+\]
+\end{lemma}
+\begin{proof}
+For every edge $(u,v)\in E$, we have $e^{-M}\le e^{s(u)},e^{s(v)}\le e^{M}$, hence $e^{-M}\le \tfrac12(e^{s(u)}+e^{s(v)})\le e^{M}$ and therefore
+\[
+e^{-M}a_0(u,v)\le a_s(u,v)\le e^{M}a_0(u,v).
+\]
+Substituting into the quadratic form gives $e^{-M}f^\top L_0 f\le f^\top L_s f\le e^{M}f^\top L_0 f$ for all $f$, which is exactly the Loewner (PSD) sandwich $e^{-M}L_0\preceq L_s\preceq e^{M}L_0$.
+Since both Laplacians share the constant vector $\mathbf{1}$ in their nullspace, the min--max (Rayleigh quotient) characterization of $\lambda_2$ on the orthogonal complement of $\mathbf{1}$ yields the stated eigenvalue bounds.
+\end{proof}
+
+\begin{remark}[Differentiable seam learning and GNN rewiring]
+For learning-based pipelines, a seam $s_\theta$ produced by a neural network can be optimized end-to-end by differentiating through a \emph{relaxed} shortest-path layer (e.g., via log-sum-exp/softmin path energies or entropic optimal transport relaxations). The seam parameterization provides a low-dimensional, geometry-aware control knob: backpropagated gradients update $s$ while preserving the underlying adjacency, and Theorem~\ref{thm:inverse_seam_stability} gives a linear-algebraic handle on conditioning when the edge-fitting objective is used as a loss.
+\end{remark}
+
 \subsection{Curvature Preservation}
 
 Finally, we prove that our specific arithmetic graph rule perfectly captures continuous geometric curvature logic.
@@ -636,34 +670,6 @@ The theorems established here open immediate applications in machine learning an
     \item \textbf{Seam-based metric learning for embeddings (Outlook):} Many visualization and embedding pipelines search for point positions in a fixed ambient space. An alternative suggested by the seam viewpoint is to keep a simple background domain fixed (e.g., a grid or mesh) and instead learn the intrinsic metric on that domain by optimizing a seam $s$, so that geodesic distances in the learned metric better match observed dissimilarities.
 \end{itemize}
 
-\begin{lemma}[Spectral stability of seam-reweighted Laplacians]\label{lem:spectral-stability}
-Let $G=(V,E)$ be a connected undirected graph with symmetric base edge weights (conductances) $a_0(u,v)=a_0(v,u)>0$ on $E$.
-Given a seam $s:V\to\R$, define seam-reweighted conductances
-\[
-a_s(u,v):=a_0(u,v)\,\frac{e^{s(u)}+e^{s(v)}}{2},\qquad (u,v)\in E.
-\]
-Let $L_0,L_s$ be the corresponding \emph{unnormalized} weighted graph Laplacians, i.e.
-\[
-f^\top L_s f = \tfrac12\sum_{(u,v)\in E} a_s(u,v)\,(f(u)-f(v))^2\qquad\text{for all }f\in\R^{|V|}.
-\]
-If $M:=\|s\|_\infty$, then
-\[
-e^{-M}L_0\preceq L_s\preceq e^{M}L_0.
-\]
-In particular, the algebraic connectivity (spectral gap) satisfies
-\[
-e^{-M}\,\lambda_2(L_0)\le \lambda_2(L_s)\le e^{M}\,\lambda_2(L_0).
-\]
-\end{lemma}
-\begin{proof}
-For every edge $(u,v)\in E$, we have $e^{-M}\le e^{s(u)},e^{s(v)}\le e^{M}$, hence $e^{-M}\le \tfrac12(e^{s(u)}+e^{s(v)})\le e^{M}$ and therefore
-\[
-e^{-M}a_0(u,v)\le a_s(u,v)\le e^{M}a_0(u,v).
-\]
-Substituting into the quadratic form gives $e^{-M}f^\top L_0 f\le f^\top L_s f\le e^{M}f^\top L_0 f$ for all $f$, which is exactly the Loewner (PSD) sandwich $e^{-M}L_0\preceq L_s\preceq e^{M}L_0$.
-Since both Laplacians share the constant vector $\mathbf{1}$ in their nullspace, the min--max (Rayleigh quotient) characterization of $\lambda_2$ on the orthogonal complement of $\mathbf{1}$ yields the stated eigenvalue bounds.
-\end{proof}
-
 \paragraph{Open Problem (Universality beyond genus~0).}\label{prob:universality}
 Theorem~\ref{thm:genus0-universality} resolves universality on genus~$0$ surfaces once one allows the natural reparameterization operation $g\mapsto\varphi^*g$.
 For higher genus surfaces (and in higher dimensions), the situation is less clear.
@@ -675,10 +681,6 @@ For surfaces with boundary, an analogous question is to identify the weakest sea
 \paragraph{Future Work.}
 Future work will focus on extending the discrete optimal transport ($\mathcal{R}_{\text{OT}}$) rules to dynamic multi-agent pathfinding, and exploring whether sums of composed seam rules can act as universal approximators for smooth metrics.
 On the geometry side, an appealing direction is to make the higher-genus ``moduli-augmented'' picture quantitative: for example, one could leverage collar-type control (injectivity-radius and short-geodesic structure) to relate bounded geometry assumptions to stability of moduli parameters, while keeping the local conformal degree of freedom represented by the seam.
-
-\begin{remark}[Differentiable seam learning and GNN rewiring]
-For learning-based pipelines, a seam $s_\theta$ produced by a neural network can be optimized end-to-end by differentiating through a \emph{relaxed} shortest-path layer (e.g., via log-sum-exp/softmin path energies or entropic optimal transport relaxations). The seam parameterization provides a low-dimensional, geometry-aware control knob: backpropagated gradients update $s$ while preserving the underlying adjacency, and Theorem~\ref{thm:inverse_seam_stability} gives a linear-algebraic handle on conditioning when the edge-fitting objective is used as a loss.
-\end{remark}
 
 \section*{Declaration of generative AI and AI-assisted technologies in the manuscript preparation process}
 

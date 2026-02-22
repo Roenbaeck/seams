@@ -80,13 +80,13 @@
 \cortext[1]{Corresponding author}
 
 \begin{abstract}
-We present \emph{seam-driven geometry}, a scalar-first framework for geometry processing in which geometric structure is generated from a scalar field $s:U\to\R$ (a \emph{seam}, i.e., a scalar potential/log-scale field; unrelated to UV/cut seams in parameterization) via an explicit local \emph{Rule} $\mathcal{R}$. In the discrete setting, we study a conformal graph rule that assigns edge lengths using an endpoint quadrature of $e^{s}$, yielding a shortest-path metric that is easy to optimize and differentiate. Our main results are (i) a quantitative discrete-to-continuum guarantee for seam-generated shortest-path metrics on graph families whose shortest-path distances approximate background geodesic distance up to an additive $O(h)$ error (e.g., sufficiently dense neighborhood graphs); (ii) a curvature sensitivity identity showing that first-order curvature variations are governed by the cotangent Laplacian; and (iii) a strictly convex inverse-design formulation for fitting target edge weights via a quadratic program in variables $X_u=e^{s(u)}$. These results position seams as a stable interface between differential-geometric objectives and practical optimization pipelines in mesh and graph processing.
+We present a scalar-first framework for geometry processing in which geometric structure is generated from a scalar field $s:U\to\R$ through an explicit local rule $\mathcal{R}$. We call this scalar field a \emph{seam} (a potential/log-scale field; unrelated to UV/cut seams in parameterization). In the discrete setting, we study a conformal graph rule that assigns edge lengths using an endpoint quadrature of $e^{s}$, yielding an intrinsic shortest-path metric that is easy to optimize and differentiate. Our main results are (i) a quantitative discrete-to-continuum guarantee for the induced shortest-path metrics on graph families whose shortest-path distances approximate background geodesic distance up to an additive $O(h)$ error (e.g., sufficiently dense neighborhood graphs); (ii) a curvature sensitivity identity showing that first-order curvature variations are governed by the cotangent Laplacian; and (iii) a strictly convex inverse-design formulation for fitting target edge weights via a quadratic program in positive variables $X_u=e^{s(u)}$. These results position scalar-field parameterizations as a stable interface between differential-geometric objectives and practical optimization pipelines in mesh and graph processing.
 \end{abstract}
 
 \begin{highlights}
-\item Seam-driven conformal graph rule generates intrinsic shortest-path metrics via endpoint quadrature of $e^{s}$.
-\item Quantitative $O(h)$ discrete-to-continuum convergence for seam-generated metrics under standard graph approximation assumptions.
-\item Strictly convex inverse edge-weight fitting as a QP in $X=e^{s}$. Curvature Jacobian matches the cotangent Laplacian at $s=0$.
+\item A scalar-field (vertex-potential) rule reweights edge lengths locally and induces an intrinsic shortest-path metric.
+\item Quantitative $O(h)$ discrete-to-continuum convergence of the induced graph metric under standard distance-approximation assumptions.
+\item Inverse edge-weight fitting becomes a strictly convex QP in positive variables $X=e^{s}$; first-order curvature sensitivity is governed by the cotangent Laplacian at $s=0$.
 \end{highlights}
 
 \begin{keywords}
