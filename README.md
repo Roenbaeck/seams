@@ -87,6 +87,27 @@ If you have a LaTeX toolchain installed:
 latexmk -pdf ExRelSeam.tex
 ```
 
+### Computers \& Graphics (Elsevier CAS template)
+
+This repo also includes an Elsevier CAS-compatible wrapper that targets *Computers \& Graphics*:
+
+- Main file: [cag_manuscript.tex](cag_manuscript.tex)
+- Included body (paper content): [ExRelSeam_body.tex](ExRelSeam_body.tex)
+- CAS class/style files (kept at repo root for convenience): [cas-sc.cls](cas-sc.cls), [cas-dc.cls](cas-dc.cls), [cas-common.sty](cas-common.sty)
+
+To compile locally (if you have LaTeX installed):
+
+```bash
+latexmk -pdf cag_manuscript.tex
+```
+
+To compile in an online service (e.g., OpenAI Prism), upload at least:
+
+- [cag_manuscript.tex](cag_manuscript.tex)
+- [ExRelSeam_body.tex](ExRelSeam_body.tex)
+- [cas-sc.cls](cas-sc.cls) and [cas-common.sty](cas-common.sty)
+- the full [figures/](figures/) folder
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

@@ -1,0 +1,101 @@
+% Elsevier Computers & Graphics submission format (CAS bundle)
+% Main file: front-matter + includes the existing manuscript body.
+
+\documentclass[a4paper,fleqn]{cas-sc}
+
+% Bibliography/citation style (guard against class already loading it)
+\makeatletter
+\@ifpackageloaded{natbib}{}{\usepackage[numbers]{natbib}}
+\makeatother
+
+% Math
+\usepackage{amsmath,amssymb,mathtools,bm}
+
+% Figures/tables
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+% Links/URLs
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{\usepackage[hyphens]{url}}
+\makeatletter
+\@ifpackageloaded{hyperref}{}{\usepackage[unicode]{hyperref}}
+\makeatother
+\urlstyle{same}
+
+% Float placement tuning
+% The CAS documentation (els-cas-templates/doc/elsdoc-cas.tex) uses these
+% standard LaTeX parameters to encourage sensible in-text float placement.
+\AtBeginDocument{%
+ \setcounter{topnumber}{2}%
+ \setcounter{bottomnumber}{2}%
+ \setcounter{totalnumber}{4}%
+ \renewcommand{\topfraction}{0.85}%
+ \renewcommand{\bottomfraction}{0.85}%
+ \renewcommand{\textfraction}{0.15}%
+ \renewcommand{\floatpagefraction}{0.7}%
+}
+
+% Theorem/remark/proof styling
+% CAS ships its own theorem formatting in cas-common.sty (already loaded by cas-sc).
+% Using these keeps us aligned with Elsevier’s template typography.
+\newdefinition{definition}{Definition}
+\newdefinition{requirement}{Requirement}
+\newdefinition{remark}{Remark}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{conjecture}{Conjecture}
+
+\newproof{proof}{Proof}
+\let\casendproof\endproof
+\renewcommand{\endproof}{\qed\casendproof}
+
+% Common notation/macros used throughout
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\e}{\mathrm{e}}
+\newcommand{\diff}{\,\mathrm{d}}
+
+% Keep the manuscript's equation numbering-by-section
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+\numberwithin{equation}{section}
+
+\begin{document}
+\let\WriteBookmarks\relax
+
+\shorttitle{Discrete-to-Continuum Metrics from Scalar Fields}
+\shortauthors{R\"onnb\"ack}
+
+\title[mode=title]{Discrete-to-Continuum Metrics from Scalar Fields}
+
+\author[1]{Lars R\"onnb\"ack}[orcid=0000-0002-8810-7587]
+\cormark[1]
+\ead{lars@uptochange.com}
+
+\affiliation[1]{organization={Department of Computer and Systems Sciences, Stockholm University},
+            city={Stockholm},
+            country={Sweden}}
+
+\cortext[1]{Corresponding author}
+
+\begin{abstract}
+We present \emph{seam-driven geometry}, a scalar-first framework for geometry processing in which geometric structure is generated from a scalar field $s:U\to\R$ (a \emph{seam}, i.e., a scalar potential/log-scale field; unrelated to UV/cut seams in parameterization) via an explicit local \emph{Rule} $\mathcal{R}$. In the discrete setting, we study a conformal graph rule that assigns edge lengths using an endpoint quadrature of $e^{s}$, yielding a shortest-path metric that is easy to optimize and differentiate. Our main results are (i) a quantitative discrete-to-continuum guarantee for seam-generated shortest-path metrics on graph families whose shortest-path distances approximate background geodesic distance up to an additive $O(h)$ error (e.g., sufficiently dense neighborhood graphs); (ii) a curvature sensitivity identity showing that first-order curvature variations are governed by the cotangent Laplacian; and (iii) a strictly convex inverse-design formulation for fitting target edge weights via a quadratic program in variables $X_u=e^{s(u)}$. These results position seams as a stable interface between differential-geometric objectives and practical optimization pipelines in mesh and graph processing.
+\end{abstract}
+
+\begin{highlights}
+\item Seam-driven conformal graph rule generates intrinsic shortest-path metrics via endpoint quadrature of $e^{s}$.
+\item Quantitative $O(h)$ discrete-to-continuum convergence for seam-generated metrics under standard graph approximation assumptions.
+\item Strictly convex inverse edge-weight fitting as a QP in $X=e^{s}$. Curvature Jacobian matches the cotangent Laplacian at $s=0$.
+\end{highlights}
+
+\begin{keywords}
+seam-driven geometry \sep discrete conformal metric \sep Gromov--Hausdorff convergence \sep cotangent Laplacian \sep inverse metric design
+\end{keywords}
+
+\maketitle
+
+% --- Main text (ported from ExRelSeam.tex) ---
+\input{ExRelSeam_body.tex}
+
+\end{document}

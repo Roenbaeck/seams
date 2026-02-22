@@ -1,128 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Journal Article
-% LaTeX Template
-% Version 1.4 (15/5/16)
-%
-% This template has been downloaded from:
-% http://www.LaTeXTemplates.com
-%
-% Original author:
-% Frits Wenneker[](http://www.howtotex.com) with extensive modifications by
-% Vel (vel@LaTeXTemplates.com)
-%
-% License:
-% CC BY-NC-SA 3.0[](http://creativecommons.org/licenses/by-nc-sa/3.0/)
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\documentclass{article}
-
-% --- Add necessary math packages ---
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{amsthm}
-\usepackage{mathpazo}
-\usepackage[T1]{fontenc}
-\usepackage{xurl}
-\linespread{1.05}
-\usepackage{microtype}
-\setlength{\emergencystretch}{3em}
-\usepackage{bm}
-\usepackage{tikz}
-\usetikzlibrary{positioning, shapes.geometric}
-\usetikzlibrary{arrows.meta}
-\usepackage{graphicx}
-\usepackage{flafter} % prevent floats from appearing before their definition
-\usepackage[english]{babel}
-\usepackage{geometry}
-\usepackage{caption}
-\usepackage{booktabs}
-\usepackage{enumitem}
-\setlist{noitemsep}
-\usepackage{abstract}
-\renewcommand{\abstractnamefont}{\normalfont\bfseries}
-\renewcommand{\abstracttextfont}{\normalfont\small\itshape}
-\usepackage{mathtools}
-\usepackage{titlesec}
-\usepackage{fancyhdr}
-\pagestyle{fancy}
-\fancyhf{} % clear all header/foot fields to avoid overlap with defaults
-\fancyhead[C]{Discrete-to-Continuum Metrics from Scalar Fields}
-\fancyfoot[C]{\thepage}
-\setlength{\headheight}{14.5pt} % avoid "headheight too small" layout issues
-\usepackage{titling}
-\usepackage[unicode]{hyperref}
-\urlstyle{same}
-\usepackage{bookmark}
-\hypersetup{bookmarksopen=true, bookmarksnumbered=true}
-
-% --- CONVENTIONAL NUMBERING SETUP ---
-% NOTE: Journals typically expect default Arabic section numbering (1, 1.1, 1.1.1).
-% The custom Roman/Alpha numbering and \titleformat overrides are disabled below.
-%\renewcommand{\thesection}{\Roman{section}}
-%\titleformat{\section}{\large\scshape\centering}{\thesection.}{1em}{}
-%
-%\renewcommand{\thesubsection}{\Alph{subsection}}
-%\titleformat{\subsection}{\bfseries\large}{\thesection.\thesubsection}{1em}{}
-%
-%\renewcommand{\thesubsubsection}{\arabic{subsubsection}}
-%\titleformat{\subsubsection}{\normalfont\bfseries}{\thesection.\thesubsection.\thesubsubsection.}{0.5em}{}
-
-\newtheorem{definition}{Definition}
-\newtheorem{requirement}{Requirement}
-\newtheorem{lemma}{Lemma}
-\newtheorem{proposition}{Proposition}
-\newtheorem{theorem}{Theorem}
-\newtheorem{corollary}{Corollary}
-\newtheorem{conjecture}{Conjecture}
-\theoremstyle{remark}
-\newtheorem{remark}{Remark}
-
-% --- Common notation/macros used in theorem statements ---
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\e}{\mathrm{e}}
-\newcommand{\diff}{\,\mathrm{d}}
-
-\renewcommand{\theequation}{\thesection.\arabic{equation}}
-\numberwithin{equation}{section}
-
-%----------------------------------------------------------------------------------------
-%	TITLE SECTION
-%----------------------------------------------------------------------------------------
-
-\setlength{\droptitle}{-4\baselineskip}
-
-\pretitle{\begin{center}\Huge\bfseries}
-\posttitle{\end{center}}
-\title{\vspace{5mm}\fontsize{24pt}{24pt}\selectfont\textbf{Discrete-to-Continuum Metrics \\from Scalar Fields}}
-\author{%
-\\ %
-\textsc{Lars Rönnbäck}
-\\ %
-\normalsize Stockholm University \\
-\normalsize \href{mailto:lars@uptochange.com}{lars@uptochange.com}
-\\ %
-}
-\date{}
-\renewcommand{\maketitlehookd}{%
-\begin{abstract}
-\noindent We present \emph{seam-driven geometry}, a scalar-first framework for geometry processing in which geometric structure is generated from a scalar field \(s:U\to\R\) (a \emph{seam}, i.e., a scalar potential/log-scale field; unrelated to UV/cut seams in parameterization) via an explicit local \emph{Rule} \(\mathcal{R}\). In the discrete setting, we study a conformal graph rule that assigns edge lengths using an endpoint quadrature of \(e^{s}\), yielding a shortest-path metric that is easy to optimize and differentiate. Our main results are (i) a quantitative discrete-to-continuum guarantee for seam-generated shortest-path metrics on graph families whose shortest-path distances approximate background geodesic distance up to an additive $O(h)$ error (e.g., sufficiently dense neighborhood graphs); (ii) a curvature sensitivity identity showing that first-order curvature variations are governed by the cotangent Laplacian; and (iii) a strictly convex inverse-design formulation for fitting target edge weights via a quadratic program in variables \(X_u=e^{s(u)}\). These results position seams as a stable interface between differential-geometric objectives and practical optimization pipelines in mesh and graph processing.
-\end{abstract}
-\vspace{0.5\baselineskip}
-\noindent\textbf{Keywords:} seam-driven geometry; discrete conformal metric; Gromov--Hausdorff convergence; signless Laplacian; inverse metric design.
-}
-
-%----------------------------------------------------------------------------------------
-
-\begin{document}
-
-\maketitle
-\thispagestyle{fancy}
-
-%----------------------------------------------------------------------------------------
-%	ARTICLE CONTENTS
-%----------------------------------------------------------------------------------------
-
 \section{Introduction}
 \label{sec:introduction}
 
@@ -158,7 +33,7 @@ Our intent is not to claim novelty of using scalar fields per se, but to formali
 
 Figure~\ref{fig:seam-curvature} provides a representative visualization of a seam field on a mesh and the intrinsic curvature induced by the seam-generated edge lengths.
 
-\begin{figure}[!htbp]
+\begin{figure}[pos=htbp]
 \centering
 \includegraphics[width=0.98\linewidth]{figures/fig1_seam_curvature.pdf}
 \caption{A small Delaunay mesh colored by the seam field $s$ (left) and the induced discrete Gaussian curvature $K_s$ (angle defect) computed from the seam-generated intrinsic edge lengths $\ell_s(u,v)=\ell_0(u,v)\tfrac{e^{s(u)}+e^{s(v)}}{2}$ (right; boundary vertices masked to avoid boundary angle-defect dominance).}
@@ -389,10 +264,11 @@ Since $M$ is compact, $d_{g_0}(x,y)\le \mathrm{diam}(M,g_0)$, so the right-hand 
 The spanner hypothesis in Lemma~\ref{lem:path-approx} is the precise technical condition needed to convert continuous $g_0$-geodesic distances into comparable \emph{edge-path} distances on the graph with an $O(h_n)$ error.
 Sampling/coverage alone ensures $V_n$ is dense in $M$, but without a spanner-type assumption one may only obtain a mesh-dependent \emph{multiplicative} distortion between graph shortest-path length and $d_{g_0}$.
 It is important to distinguish two related but different notions.
-\begin{enumerate}[label=(\roman*), leftmargin=*]
+{\renewcommand{\labelenumi}{(\roman{enumi})}%
+\begin{enumerate}
     \item In the planar Euclidean setting, the Delaunay triangulation is a \emph{geometric $t$-spanner} (for an explicit universal constant $t>1$); see, e.g., \cite{KeilGutwin1992}. This is a constant-factor guarantee.
     \item The hypothesis used in Lemma~\ref{lem:path-approx} is stronger: it asks for an \emph{asymptotically geodesic} spanner with stretch $1+O(h_n)$, which is the ingredient that yields an \emph{additive} $O(h_n)$ distance error for fixed $x,y\in M$. A constant-factor spanner bound alone does \emph{not} imply such an asymptotically tight estimate.
-\end{enumerate}
+\end{enumerate}}
 
 For smooth manifolds, $(1+o(1))$-type geodesic-graph approximation results are typically proved for sufficiently dense \emph{neighborhood graphs} (e.g., $\varepsilon$-graphs or $k$NN graphs with neighborhood size tending to zero but containing many sample points), rather than for bounded-degree triangulation 1-skeleta; see, e.g., \cite{TenenbaumDeSilvaLangford2000} for a representative uniform convergence statement in the Isomap setting.
 In our proofs, the convergence rate is driven by whatever stretch-to-$1$ estimate the chosen graph family provides (i.e., the rate at which the graph shortest-path geometry approximates $d_{g_0}$).
@@ -501,7 +377,7 @@ Taking the infimum over vertex paths gives $d_n(u,v)\le d_g(x,y)+C_1 h_n$; conve
 
 Figure~\ref{fig:convergence} visualizes this predicted $O(h)$ behavior on a quasi-uniform refinement sequence.
 
-\begin{figure}[!htbp]
+\begin{figure}[pos=htbp]
 \centering
 \includegraphics[width=0.75\linewidth]{figures/fig2_convergence.pdf}
 \caption{Log--log convergence plot for the discrete shortest-path metric: mean $|d_n-d_g|$ over fixed test pairs versus $h$ (mean edge length) on a quasi-uniform sampling sequence with neighborhood-style graphs. A fit over the pre-plateau regime yields slope close to $1$ (dashed), consistent with the $O(h)$ rate driven by the spanner approximation; the dotted line shows a slope-$1$ reference.}
@@ -683,7 +559,7 @@ In practice, one typically combines such a step with damping/line-search, period
 \end{remark}
 
 \begin{remark}[Length fitting vs. curvature fitting: an arithmetic--geometric tradeoff]
-The arithmetic-mean conformal rule is chosen so that inverse \emph{length/edge-weight} fitting becomes a strictly convex quadratic program in $X=e^s$ (Section~\ref{sec:inverse-design}), enabling fast, globally optimal solves.
+The arithmetic-mean conformal rule is chosen so that inverse \emph{length/edge-weight} fitting becomes a strictly convex quadratic program in $X=e^s$ (Section~\ref{sec:inverse_design}), enabling fast, globally optimal solves.
 This comes with a complementary tradeoff on the \emph{curvature} side.
 In classical discrete conformal geometry on triangle meshes, the geometric-mean scaling $\ell(u,v)=\ell_0(u,v)\exp\bigl(\tfrac12(s(u)+s(v))\bigr)$ admits variational formulations in which prescribing target curvature can be cast as minimizing an energy that is convex in the log-scale factors under standard conditions (e.g., Delaunay-type hypotheses / appropriate diagonal flips) \cite{SpringbornSchroederPinkall2008,GuLuoSunWu2018}.
 Under the arithmetic-mean rule, we do not claim an analogous globally convex curvature-prescription objective; instead we emphasize the exact first-order curvature sensitivity (Theorem~\ref{thm:discrete_curvature}) and a local Newton correction step around $s=0$ (Proposition~\ref{prop:seam-newton}).
@@ -698,7 +574,7 @@ It is also a genuine \emph{limitation} if one expects a globally valid curvature
 \subsection{Numerical Validation}
 \label{sec:numerics}
 
-To complement the theoretical results, we validate the inverse-design quadratic program (Theorem~\ref{thm:inverse_seam}) on random geometric graphs. The reference implementation is publicly available at \url{https://github.com/Roenbaeck/seams}.
+To complement the theoretical results, we validate the inverse-design quadratic program (Theorem~\ref{thm:inverse_seam}) on random geometric graphs. The reference implementation is publicly available at \url{https://github.com/Roenbaeck/seams}.\hspace{0pt}\label{sec:inverse_design}
 
 We generate graphs with $n \in \{10^2, 10^3, 10^4\}$ vertices and assign a ground-truth seam $s_{\mathrm{gt}}$. Ground-truth edge weights $w_{\mathrm{gt}}$ are generated via the conformal graph rule. We then form noisy target weights $w^*(u,v) = w_{\mathrm{gt}}(u,v)(1 + \sigma \xi_{uv})$, where $\xi_{uv}$ is i.i.d. standard normal noise and $\sigma \in [0, 0.20]$ controls the noise level. For $n\le 5000$ we use a Delaunay triangulation; for larger $n$ we use a symmetric $k$-nearest-neighbor graph for scalability. We solve the strictly convex QP to recover the optimal seam $s^*$ and its induced weights $w_{\mathrm{opt}}$.
 
@@ -712,14 +588,14 @@ Finally, we empirically visualize the predicted $O(h)$ convergence of the discre
 
 Figure~\ref{fig:inverse-design} shows a representative inverse-design denoising histogram (noisy targets versus recovered weights).
 
-\begin{figure}[!htbp]
+\begin{figure}[pos=htbp]
 \centering
 \includegraphics[width=0.78\linewidth]{figures/fig3_inverse_design.pdf}
 \caption{Inverse-design denoising: histogram of relative edge-weight error with respect to ground truth, comparing noisy targets $w^*$ to recovered weights $w_{\mathrm{opt}}$ obtained from the strictly convex inverse-design solve.}
 \label{fig:inverse-design}
 \end{figure}
 
-\begin{table}[ht]
+\begin{table}[pos=htbp]
 \centering
 \caption{Numerical validation of inverse seam design. The optimization recovers edge weights ($w_{\mathrm{opt}}$) that are significantly closer to the ground truth ($w_{\mathrm{gt}}$) than the noisy targets ($w^*$), and similarly improves shortest-path distances. The inverse-design step is solved via sparse linear algebra (normal equations with a positivity-constrained least-squares fallback); for $n=10^4$ the core solve takes about $0.04\,\mathrm{s}$ in our reference implementation (excluding shortest-path evaluation).}
 \label{tab:validation}
@@ -948,4 +824,3 @@ Oberwolfach Seminars, vol. 38, Birkh\"auser, 2008.
 
 \end{thebibliography}
 
-\end{document}
