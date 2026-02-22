@@ -126,9 +126,12 @@
 \section{Introduction}
 \label{sec:introduction}
 
-Standard presentations of geometry begin with a metric or a manifold structure postulated \emph{a priori}. Here we emphasize a complementary, constructive viewpoint: start with a base space \(U\) and a scalar field \(s\) (the \emph{seam}), then let an explicit Rule \(\mathcal{R}\) produce the geometric data. 
+Discrete conformal geometry and mesh parameterization often represent intrinsic geometry through a \emph{scalar} unknown (a vertex-based log-scale / conformal factor), which is then converted into edge lengths, angles, and curvature by an explicit local construction \cite{SpringbornSchroederPinkall2008,GuLuoSunWu2018,BobenkoSuris2008}.
+We adopt the same scalar-first ethos, but with a different computational emphasis: rather than building geometry primarily through angle-based formulations, we study \emph{shortest-path} metric spaces induced by seam-reweighted edge lengths on graphs and meshes.
+In our terminology, the scalar field $s:U\to\R$ is a \emph{seam} (a scalar potential / log-scale field), and a \emph{Rule} $\mathcal{R}$ is the local map that turns $(U,s)$ into geometric data.
 
-In smooth differential geometry, this scalar-first perspective provides an elegant synthesis. Conformal metrics, Information Geometry (Hessian metrics), optimal transport (Kantorovich potentials), and Morse handle-bodies can all be viewed as the output of specific local operations on a scalar field. However, the true utility of this formulation arises in computational and applied mathematics. On discrete meshes, manipulating full tensor fields is algorithmically cumbersome and numerically unstable. By reducing metric generation to the evaluation of a scalar seam, highly complex geometric problems (like metric projection or feature-aware routing) can be reduced to fast, stable scalar optimization.
+This viewpoint unifies a range of classical constructions (e.g., conformal scaling, Hessian metrics, and optimal-transport potentials), but its main utility here is algorithmic.
+On discrete meshes, manipulating full tensor fields is cumbersome; by parameterizing geometry through a scalar seam, metric generation and inverse design reduce to sparse linear algebra and scalable optimization.
 
 In this paper, we formally define the Seam-Rule framework and demonstrate its utility. Section~\ref{sec:framework} establishes the formal axioms and composition laws for Rules, and Section~\ref{sec:repertoire} catalogs standard continuous and discrete Rules. This axiomatic layer is intended primarily as a unifying \emph{language} for organizing constructions across settings (and can be skimmed on a first, results-focused read). Section~\ref{sec:continuous-geometry} illustrates how familiar continuous identities (e.g., Gauss--Bonnet) are cleanly expressed in the seam-rule viewpoint. Finally, Section~\ref{sec:discrete-geometry} provides the computational core: proving that seam-generated shortest-path metrics on suitable graph families approximate smooth conformal metrics, identifying a cotangent-Laplacian curvature sensitivity, and enabling strictly convex inverse metric design.
 
@@ -145,11 +148,15 @@ Our contributions are geared toward mesh and graph processing, where one seeks p
 \subsection{Related Work}
 Scalar fields on meshes are a classical and widely used representation in geometry processing, in particular as vertex-based conformal factors and potentials. Discrete uniformization and discrete conformal parameterizations seek a scalar conformal scaling that induces a metric of prescribed curvature or that supports flattening/parameterization; see, e.g., Gu--Luo--Sun--Wu \cite{GuLuoSunWu2018} and the variational formulations of Springborn--Schr\"oder--Pinkall \cite{SpringbornSchroederPinkall2008}. In this literature, a scalar field (often a log-scale factor) is the primary unknown, and the induced metric is obtained by a local rule that rescales discrete lengths/angles.
 
+Our discrete conformal graph rule is closely aligned in spirit---a scalar log-scale drives intrinsic geometry---but differs in the induced object: we assign seam-dependent \emph{edge lengths} (via an endpoint quadrature) and then take the induced \emph{shortest-path} distance, whereas much of the classical discrete conformal literature emphasizes angle structures and curvature energies.
+
 Circle packing provides another scalar-first route to discrete conformal geometry, in which circle radii (or log-radii) act as scalar variables whose induced intersection patterns and edge lengths encode a discrete conformal structure; see Stephenson \cite{Stephenson2005} for an overview and references. Closely related, combinatorial Ricci flow evolves a vertex-based scalar parameterization (e.g., circle radii or log-scale factors) to drive discrete curvature toward a target, with Chow--Luo \cite{ChowLuo2003} as a foundational reference.
 
 More broadly, discrete-to-continuum limits are a recurring theme in discrete differential geometry: as triangulations refine, one seeks conditions under which discrete conformal structures and their induced metrics converge (in appropriate senses) to their smooth counterparts; see, e.g., the discrete conformal/uniformization viewpoints in \cite{BobenkoSpringborn2007,GuLuoSunWu2018} and references therein.
 
 Our intent is not to claim novelty of using scalar fields per se, but to formalize a general "seam $\to$ rule $\to$ geometry" interface that accommodates multiple continuous and discrete constructions under one axiomatic umbrella, and to highlight algorithmic consequences of a particular discrete edge-length rule: a quantitative discrete-to-continuum guarantee for the resulting shortest-path metric, a curvature sensitivity identity, and a convex inverse-design formulation for fitting target edge weights.
+
+Figure~\ref{fig:seam-curvature} provides a representative visualization of a seam field on a mesh and the intrinsic curvature induced by the seam-generated edge lengths.
 
 \begin{figure}[!htbp]
 \centering
@@ -162,6 +169,8 @@ Our intent is not to claim novelty of using scalar fields per se, but to formali
 \label{sec:framework}
 
 Let \(U\) be a paracompact Hausdorff space (or discrete set) equipped with a local background structure \(\mathcal{T}_U\) (e.g., a differentiable atlas, a background metric $h$, or a graph adjacency).
+
+For concreteness, keep in mind the conformal prototype: the smooth rule $\mathcal{R}_{\mathrm{Conf}}$ maps a seam $s$ to the metric tensor $g=e^{2s}h$ on a background surface $(U,h)$, while our discrete conformal graph rule maps $s$ to seam-dependent edge lengths and hence a shortest-path distance.
 
 \begin{definition}
 A \emph{seam} is a scalar field \(s: U \to \mathbb{R}\) belonging to an admissible class \(\mathcal{S}(U)\) (e.g., \(C^\infty\), Morse, convex, or discrete array). In concrete instances, $s$ often plays the role of a potential or a (log) conformal factor. The seam acts as the generative control variable for local geometry.
@@ -490,6 +499,8 @@ Thus, as in Theorem~\ref{thm:gh-limit}, the leading $O(h_n)$ contribution to the
 Taking the infimum over vertex paths gives $d_n(u,v)\le d_g(x,y)+C_1 h_n$; conversely, comparing any discrete shortest path to the continuous geodesic and using the same two lemmas yields $d_g(x,y)\le d_n(u,v)+C_2 h_n$. Combining the inequalities gives the stated uniform $O(h_n)$ bound.
 \end{proof}
 
+Figure~\ref{fig:convergence} visualizes this predicted $O(h)$ behavior on a quasi-uniform refinement sequence.
+
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.75\linewidth]{figures/fig2_convergence.pdf}
@@ -698,6 +709,8 @@ In the high-noise $\sigma=0.20$ runs of Table~\ref{tab:validation}, the nonnegat
 Table~\ref{tab:validation} summarizes the results. The optimization consistently denoises the metric: for instance, at $n=10^4$ and $\sigma=0.10$, the noisy weights deviate from the truth by $9.9\%$, while the recovered weights $w_{\mathrm{opt}}$ reduce this error to $5.3\%$. This denoising effect extends to the induced shortest-path metric, where the mean relative path error drops from $5.0\%$ (noisy) to $2.3\%$ (recovered). The reported $R^2$ values are consistently high across the sweep, supporting the proof-of-concept that the seam parameterization can explain a large fraction of the variance in the target edge weights even under noise. The lone low-$R^2$ outlier ($n=100$, $\sigma=0.20$) reflects an expected failure mode: at very small $n$ with heavy noise, the target weights are insufficiently informative and the seam-generated model cannot explain the majority of the variance. Furthermore, finite-difference checks confirm that the analytical derivatives and Hessian-vector products match numerical finite differences to high precision (worst relative errors $\sim 10^{-6}$ and $\sim 10^{-9}$ over the sweep), validating the exactness of the quadratic formulation.
 
 Finally, we empirically visualize the predicted $O(h)$ convergence of the discrete shortest-path metric to the continuous conformal metric (Theorems~\ref{thm:gh-limit}--\ref{thm:oh-bound}) by comparing discrete distances on quasi-uniform sampling sequences with neighborhood-style graphs against a high-resolution grid-based approximation of the continuous geodesic distance. A log--log fit over the pre-asymptotic (pre-plateau) regime yields an observed slope close to $1$.
+
+Figure~\ref{fig:inverse-design} shows a representative inverse-design denoising histogram (noisy targets versus recovered weights).
 
 \begin{figure}[!htbp]
 \centering
@@ -927,6 +940,11 @@ Lecture Notes in Mathematics, vol. 1357, Springer, 1988.
 M. Wardetzky, S. Mathur, F. K\"alberer, and E. Grinspun,
 ``Discrete Laplace operators: no free lunch,''
 \textit{Symposium on Geometry Processing} (2007).
+
+\bibitem{BobenkoSuris2008}
+A. I. Bobenko and Y. B. Suris (eds.),
+\textit{Discrete Differential Geometry},
+Oberwolfach Seminars, vol. 38, Birkh\"auser, 2008.
 
 \end{thebibliography}
 
