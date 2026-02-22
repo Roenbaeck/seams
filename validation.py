@@ -10,6 +10,8 @@ Signless Laplacian of the mesh.
 Dependencies: numpy, scipy, matplotlib
 """
 
+from __future__ import annotations
+
 import numpy as np
 import scipy.sparse as sp
 from scipy.optimize import lsq_linear
@@ -297,7 +299,7 @@ def generate_mesh(n_points: int, rng: np.random.Generator):
     return points, edges, faces, boundary_vertices
 
 
-def solve_inverse_seam(points: np.ndarray, edges: np.ndarray, w_star: np.ndarray):
+def solve_inverse_seam(points: np.ndarray, edges: np.ndarray, w_star: np.ndarray, stats: dict | None = None):
     """Solve the inverse-design quadratic (unconstrained, with X>=0 fallback).
 
     Returns:
@@ -338,7 +340,21 @@ def solve_inverse_seam(points: np.ndarray, edges: np.ndarray, w_star: np.ndarray
         A_dense = np.zeros((len(edges), N), dtype=float)
         A_dense[rows, cols] = data
         x_nnls, _ = nnls(A_dense, w_star)
+        if stats is not None:
+            stats.update(
+                {
+                    "solver": "nnls",
+                    "used_fallback": True,
+                    "unconstrained_min": float("nan"),
+                    "unconstrained_max": float("nan"),
+                    "floor": 1e-12,
+                    # NNLS enforces nonnegativity; zeros correspond to active constraints.
+                    "active_frac": float(np.mean(x_nnls <= 1e-14)),
+                }
+            )
         X_opt = np.clip(x_nnls, 1e-12, None)
+        if stats is not None:
+            stats["floor_frac"] = float(np.mean(X_opt <= 1.0000000001e-12))
         return X_opt, l0, u, v
 
     # Primary path: solve normal equations (fast). Add a tiny ridge for numerical
@@ -348,6 +364,16 @@ def solve_inverse_seam(points: np.ndarray, edges: np.ndarray, w_star: np.ndarray
         H = H + sp.eye(N, format="csr") * ridge
 
     X_opt = spsolve(H, b)
+    if stats is not None and np.all(np.isfinite(X_opt)):
+        stats.update(
+            {
+                "solver": "normal_eq",
+                "used_fallback": False,
+                "unconstrained_min": float(np.min(X_opt)),
+                "unconstrained_max": float(np.max(X_opt)),
+                "floor": 1e-12,
+            }
+        )
 
     # Decide whether we trust the unconstrained solve.
     #
@@ -405,8 +431,19 @@ def solve_inverse_seam(points: np.ndarray, edges: np.ndarray, w_star: np.ndarray
         if not res.success:
             raise RuntimeError(f"lsq_linear failed: {res.message}")
         X_opt = res.x
+        if stats is not None:
+            stats.update(
+                {
+                    "solver": "lsq_linear",
+                    "used_fallback": True,
+                    # In bounded least-squares, x==0 indicates an active lower bound.
+                    "active_frac": float(np.mean(X_opt <= 1e-14)),
+                }
+            )
 
     X_opt = np.clip(X_opt, 1e-12, None)
+    if stats is not None:
+        stats["floor_frac"] = float(np.mean(X_opt <= 1.0000000001e-12))
     return X_opt, l0, u, v
 
 
@@ -450,7 +487,8 @@ def run_experiment(n_points: int, sigma: float, seed: int = 42):
     w_star = w_gt * (1.0 + sigma * xi)
     w_star = np.clip(w_star, 1e-6, None)
 
-    X_opt, _l0_check, _u_check, _v_check = solve_inverse_seam(points, edges, w_star)
+    solver_stats: dict[str, float | str | bool] = {}
+    X_opt, _l0_check, _u_check, _v_check = solve_inverse_seam(points, edges, w_star, stats=solver_stats)
     s_opt = np.log(X_opt)
     w_opt = l0 * (X_opt[u] + X_opt[v]) / 2.0
 
@@ -563,6 +601,17 @@ def run_experiment(n_points: int, sigma: float, seed: int = 42):
         "path_rel_max": path_rel_max,
         "dist_ratio_mean": dist_ratio_mean,
     }
+    # Track positivity-constraint activity for reporting.
+    metrics.update(
+        {
+            "solver": str(solver_stats.get("solver", "unknown")),
+            "used_fallback": bool(solver_stats.get("used_fallback", False)),
+            "X_unconstrained_min": float(solver_stats.get("unconstrained_min", float("nan"))),
+            "X_unconstrained_max": float(solver_stats.get("unconstrained_max", float("nan"))),
+            "X_floor_frac": float(solver_stats.get("floor_frac", float("nan"))),
+            "X_active_frac": float(solver_stats.get("active_frac", float("nan"))),
+        }
+    )
     metrics.update(curv_metrics)
     a_fit, b_fit, r2_fit = compute_affine_fit(s_gt, s_opt)
     metrics.update({"a_fit": float(a_fit), "b_fit": float(b_fit), "r2_fit": float(r2_fit)})
