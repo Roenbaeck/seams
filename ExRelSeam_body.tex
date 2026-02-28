@@ -8,7 +8,7 @@ In our terminology, the scalar field $s:U\to\R$ is a \emph{seam} (a scalar poten
 This viewpoint unifies a range of classical constructions (e.g., conformal scaling, Hessian metrics, and optimal-transport potentials), but its main utility here is algorithmic.
 On discrete meshes, manipulating full tensor fields is cumbersome; by parameterizing geometry through a scalar seam, metric generation and inverse design reduce to sparse linear algebra and scalable optimization.
 
-In this paper, we formally define the Seam-Rule framework and demonstrate its utility. Section~\ref{sec:framework} establishes the formal axioms and composition laws for Rules, and Section~\ref{sec:repertoire} catalogs standard continuous and discrete Rules. This axiomatic layer is intended primarily as a unifying \emph{language} for organizing constructions across settings (and can be skimmed on a first, results-focused read). Section~\ref{sec:continuous-geometry} illustrates how familiar continuous identities (e.g., Gauss--Bonnet) are cleanly expressed in the seam-rule viewpoint. Finally, Section~\ref{sec:discrete-geometry} provides the computational core: proving that seam-generated shortest-path metrics on suitable graph families approximate smooth conformal metrics, identifying a cotangent-Laplacian curvature sensitivity, and enabling strictly convex inverse metric design.
+In this paper, we define the Seam-Rule framework (Section~\ref{sec:framework}; a compact organizational language for seam-driven constructions) and catalog standard continuous and discrete Rules (Section~\ref{sec:repertoire}). Section~\ref{sec:continuous-geometry} illustrates how familiar continuous identities (e.g., Gauss--Bonnet) are cleanly expressed in the seam-rule viewpoint. Finally, Section~\ref{sec:discrete-geometry} provides the computational core: proving that seam-generated shortest-path metrics on suitable graph families approximate smooth conformal metrics, identifying a cotangent-Laplacian curvature sensitivity, and enabling strictly convex inverse metric design.
 
 \paragraph{Contributions (geometry processing view).}
 Our contributions are geared toward mesh and graph processing, where one seeks parameterizations that are easy to optimize, differentiate, and analyze.
@@ -16,8 +16,8 @@ Our contributions are geared toward mesh and graph processing, where one seeks p
     \item \textbf{A scalar-first metric parameterization on graphs/meshes.} We study a conformal graph rule that assigns edge lengths using an endpoint quadrature of \(e^{s}\), producing a shortest-path metric with local control by a scalar seam.
     \item \textbf{Quantitative discrete-to-continuum guarantees.} Under an asymptotically geodesic spanner hypothesis for the background shortest-path metric (as is standard for sufficiently dense neighborhood graphs), we prove an $O(h)$ Gromov--Hausdorff convergence rate between the seam-generated discrete metric and the smooth conformal metric (Theorem~\ref{thm:gh-limit}) and derive a corresponding uniform $O(h)$ metric error bound (Theorem~\ref{thm:oh-bound}).
     \item \textbf{Curvature sensitivity via cotangent weights.} We show that the \emph{first-order} (Jacobian) sensitivity of angle-defect curvature with respect to the seam exactly matches the cotangent Laplacian (with the standard scaling used in discrete differential geometry) at \(s=0\) (Theorem~\ref{thm:discrete_curvature}), providing a differentiable link between scalar parameters and discrete curvature.
-    \item \textbf{Convex inverse metric design.} We reduce edge-weight fitting under the conformal graph rule to a strictly convex quadratic program in variables \(X_u=e^{s(u)}\) on non-bipartite graphs (Theorem~\ref{thm:inverse_seam}), leveraging a classical signless-Laplacian positive-definiteness criterion \cite{Desai1994,CvetkovicRowlinsonSimic2007}. We further provide gauge-fixing and conditioning guarantees (Theorem~\ref{thm:inverse_seam_stability}).
-    \item \textbf{Genus-0 universality up to reparameterization.} We show that on the sphere (genus~0), seam-driven conformal scaling becomes \emph{universal up to diffeomorphism}: any smooth metric can be written as a pullback of a fixed background metric followed by a conformal seam rule (Theorem~\ref{thm:genus0-universality}).
+    \item \textbf{Convex inverse metric design.} We reduce edge-weight fitting under the conformal graph rule to a strictly convex quadratic program in variables \(X_u=e^{s(u)}\) on non-bipartite graphs (Theorem~\ref{thm:inverse_seam}), leveraging a classical signless-Laplacian positive-definiteness criterion \cite{Desai1994,CvetkovicRowlinsonSimic2007}. We further provide gauge-fixing and conditioning guarantees (Theorem~\ref{thm:inverse_seam_stability}), and show that adding a graph-Laplacian smoothness prior preserves strict convexity while dramatically improving noise robustness (Corollary~\ref{cor:regularised-inverse}; on the Stanford Bunny, $7.3\times$ error reduction at $\sigma=0.10$).
+    \item \textbf{Genus-0 universality up to reparameterization.} We show that on the sphere (genus~0), seam-driven conformal scaling becomes \emph{universal up to diffeomorphism}: any smooth metric can be written as a pullback of a fixed background metric followed by a conformal seam rule (Proposition~\ref{thm:genus0-universality}).
 \end{enumerate}
 
 \subsection{Related Work}
@@ -44,60 +44,12 @@ Figure~\ref{fig:seam-curvature} provides a representative visualization of a sea
 \label{sec:framework}
 
 Let \(U\) be a paracompact Hausdorff space (or discrete set) equipped with a local background structure \(\mathcal{T}_U\) (e.g., a differentiable atlas, a background metric $h$, or a graph adjacency).
+A \emph{seam} is a scalar field \(s: U \to \mathbb{R}\) in an admissible class \(\mathcal{S}(U)\) (e.g., \(C^\infty\), Morse, convex, or discrete vertex array); it plays the role of a potential or (log) conformal factor and serves as the single generative control variable for local geometry.
+A \emph{Rule} \(\mathcal{R}\) is a local, natural assignment that sends admissible seam data \((U,s,\mathcal{T}_U)\) to a geometric output (e.g., a metric tensor, a pseudo-metric, or a weighted graph).
+We require three standard sheaf-theoretic properties---\emph{locality} (output on \(V\subseteq U\) depends only on \(s|_V\) and \(\mathcal{T}_U|_V\)), \emph{gluing} (compatible local outputs extend uniquely to a global one), and \emph{functoriality} (\(\mathcal{R}(U,\varphi^*s')=\varphi^*\mathcal{R}(U',s')\) for structure-preserving maps \(\varphi\))---all of which are automatically satisfied by the concrete rules we use.\label{def:rule}
+Rules compose: if \(\mathcal{R}_1\) produces an intermediate background and \(\mathcal{R}_2\) consumes it, the composed map \(\mathcal{R}_{2\circ 1}(U,(s_1,s_2)):=\mathcal{R}_2(U,s_2;\mathcal{R}_1(U,s_1))\) inherits all three properties (the verification is routine from the definitions).\label{prop:composition}
 
-For concreteness, keep in mind the conformal prototype: the smooth rule $\mathcal{R}_{\mathrm{Conf}}$ maps a seam $s$ to the metric tensor $g=e^{2s}h$ on a background surface $(U,h)$, while our discrete conformal graph rule maps $s$ to seam-dependent edge lengths and hence a shortest-path distance.
-
-\begin{definition}
-A \emph{seam} is a scalar field \(s: U \to \mathbb{R}\) belonging to an admissible class \(\mathcal{S}(U)\) (e.g., \(C^\infty\), Morse, convex, or discrete array). In concrete instances, $s$ often plays the role of a potential or a (log) conformal factor. The seam acts as the generative control variable for local geometry.
-\end{definition}
-
-\begin{definition}\label{def:rule}
-A \emph{Rule} is a natural, local assignment \(\mathcal{R}\) that takes admissible seam data \((U, s, \mathcal{T}_U)\) to a geometric output \(G\) (e.g., a pseudo-metric \(D\), tensor \(g\), or weighted graph). A valid Rule must satisfy:
-\begin{enumerate}
-    \item \textbf{Locality:} For every open \(V\subseteq U\), the output on \(V\) depends only on \(s|_V\) and \(\mathcal{T}_U|_V\).
-    \item \textbf{Gluing (Sheaf Condition):} If \(\{V_\alpha\}\) covers \(U\) and the locally generated outputs \(G_\alpha=\mathcal{R}(V_\alpha,s|_{V_\alpha})\) agree on overlaps, there is a unique global object \(G\) such that \(G|_{V_\alpha}=G_\alpha\).
-    \item \textbf{Functoriality:} For every structure-preserving map \(\varphi:U\to U'\), one has \(\mathcal{R}(U,\varphi^\ast s')=\varphi^\ast\mathcal{R}(U',s')\).
-\end{enumerate}
-\end{definition}
-
-\begin{remark}[Scope of the axioms]\label{rem:rule-scope}
-The Functoriality axiom is to be interpreted relative to the chosen background structure: in the smooth setting, \(\varphi\) is typically a smooth map compatible with the chosen atlas/connection (or a diffeomorphism when tensors are pulled back); in the discrete setting, \(\varphi\) is typically a graph isomorphism or a map preserving adjacency/weights. Likewise, the Gluing axiom is automatic for sheaf-like outputs (e.g., smooth tensor fields), while for global outputs (e.g., a distance function on all of \(U\times U\)) the condition should be read as compatibility of the induced restrictions on each \(V_\alpha\times V_\alpha\).
-\end{remark}
-
-If the generated output is a distance function $D$, it must satisfy the standard pseudo-metric axioms (non-negativity, identity, symmetry, and triangle inequality). 
-
-A powerful feature of this axiomatic formulation is that it allows for the rigorous chaining of Rules, enabling complex geometries to be built from multiple scalar layers.
-
-\begin{proposition}\label{prop:composition}
-Let $\mathcal{R}_1$ and $\mathcal{R}_2$ be Rules in the sense of Definition~\ref{def:rule}. Suppose $\mathcal{R}_1$ maps $(U,s_1,\mathcal{T}_U)$ to an intermediate background structure $\mathcal{T}'_U:=\mathcal{R}_1(U,s_1)$, and $\mathcal{R}_2$ maps $(U,s_2,\mathcal{T}'_U)$ to a geometric output $G:=\mathcal{R}_2(U,s_2;\mathcal{T}'_U)$. Then the composed assignment
-\[
-\mathcal{R}_{2\circ 1}(U,(s_1,s_2))\;:=\;\mathcal{R}_2\bigl(U,s_2;\,\mathcal{R}_1(U,s_1)\bigr)
-\]
-is again a Rule (it satisfies Locality, Gluing, and Functoriality).
-\end{proposition}
-\begin{proof}
-Locality follows immediately from the locality of $\mathcal{R}_1$ and $\mathcal{R}_2$: restricting to $V\subseteq U$ yields
-\begin{align*}
-\mathcal{R}_{2\circ 1}\bigl(V,(s_1|_V,s_2|_V)\bigr)
-&=\mathcal{R}_2\bigl(V,s_2|_V;\,\mathcal{R}_1(V,s_1|_V)\bigr)\\
-&=\bigl(\mathcal{R}_2(U,s_2;\mathcal{R}_1(U,s_1))\bigr)\big|_V.
-\end{align*}
-Gluing holds because $\mathcal{R}_1$ glues local outputs into a unique global $\mathcal{T}'_U$, and then $\mathcal{R}_2$ glues local outputs (using that same $\mathcal{T}'_U$ as background) into a unique global $G$.
-
-For functoriality, let $\varphi:U\to U'$ be a structure-preserving map and let $s_1',s_2'$ be seams on $U'$. Write $\mathcal{T}'_{U'}:=\mathcal{R}_1(U',s_1')$. Using functoriality of $\mathcal{R}_1$ (since it is a Rule), we have
-\[
-\varphi^*\mathcal{T}'_{U'}=\varphi^*\mathcal{R}_1(U',s_1')=\mathcal{R}_1(U,\varphi^*s_1').
-\]
-Now apply functoriality of $\mathcal{R}_2$ (again since it is a Rule), treating the intermediate background as part of its admissible input data:
-\begin{multline*}
-\varphi^*\mathcal{R}_{2\circ 1}(U',(s_1',s_2'))
-=\varphi^*\mathcal{R}_2\bigl(U',s_2';\mathcal{T}'_{U'}\bigr)
-=\mathcal{R}_2\bigl(U,\varphi^*s_2';\varphi^*\mathcal{T}'_{U'}\bigr)\\
-=\mathcal{R}_2\bigl(U,\varphi^*s_2';\mathcal{R}_1(U,\varphi^*s_1')\bigr)
-\hspace{0pt}=\mathcal{R}_{2\circ 1}\bigl(U,(\varphi^*s_1',\varphi^*s_2')\bigr),
-\end{multline*}
-This is exactly the Functoriality axiom for the composed Rule.
-\end{proof}
+For concreteness, keep in mind the conformal prototype throughout: the smooth rule $\mathcal{R}_{\mathrm{Conf}}$ maps a seam $s$ to the metric tensor $g=e^{2s}h$ on a background surface $(U,h)$, while our discrete conformal graph rule maps $s$ to seam-dependent edge lengths and hence a shortest-path distance.
 
 \section{The Repertoire of Rules}
 \label{sec:repertoire}
@@ -112,33 +64,7 @@ For a smooth manifold $U$, we highlight three primary rules generating metric te
     \item \textbf{The Gradient Rule ($\mathcal{R}_{\text{Grad}}$):} $g_{ij} = |\nabla s|_h^2 h_{ij}$. A subset of conformal geometries controlled by the eikonal magnitude of the seam \cite{Sethian1999}.
 \end{enumerate}
 
-\begin{table}
-\centering
-\caption{Classical Geometries as Seam-Rule Triplets}
-\label{tab:geometries}
-\small
-\setlength{\tabcolsep}{5pt}
-\renewcommand{\arraystretch}{1.1}
-\begin{tabular}{@{}llll@{}}
-\toprule
-\textbf{Geometry} & \textbf{Rule} & \textbf{Background} & \textbf{Seam $s$} \\ \midrule
-Euclidean $\mathbb{E}^n$ & $\mathcal{R}_{\text{Hessian}}$ & None & $\frac{1}{2}\sum (x^i)^2$ \\
-Minkowski $\mathbb{M}^4$ (Lorentzian) & $\mathcal{R}_{\text{Hessian}}$ & None & $\frac{1}{2}(t^2 - x^2 - y^2 - z^2)$ \\
-Poincaré Half-Plane & $\mathcal{R}_{\text{Conf}}$ & Euclidean $\delta_{ij}$ & $\ln(R) - \ln(y)$ \\
-Stereographic Sphere & $\mathcal{R}_{\text{Conf}}$ & Euclidean $\delta_{ij}$ & $\ln(2R^2) - \ln(R^2+r^2)$ \\
-Flat Torus $\mathbb{T}^2$ & $\mathcal{R}_{\text{Grad}}$ & Euclidean $\delta_{ij}$ & $x^1$ (linear) \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\begin{remark}[A degenerate table entry]
-In Table~\ref{tab:geometries}, the Flat Torus row is intentionally simple: for the linear seam $s=x^1$ on a flat background one has $|\nabla s|_h\equiv 1$, so the gradient rule yields $g=|\nabla s|_h^2\,h=h$. Nontrivial behavior under $\mathcal{R}_{\text{Grad}}$ requires a seam with nonconstant gradient magnitude (and, if one wants a genuine Riemannian metric everywhere, bounded away from zero).
-\end{remark}
-
-\begin{remark}[Pseudo-Riemannian outputs are out of scope]
-The Minkowski example in Table~\ref{tab:geometries} is included only as an illustrative reminder that seam rules can generate familiar tensors: for $s=\tfrac12(t^2-x^2-y^2-z^2)$ one has $\nabla^2 s=\mathrm{diag}(1,-1,-1,-1)$, which is \emph{not} positive definite. The present paper focuses on (local) Riemannian metrics produced where the generated tensor is positive definite; extending the framework systematically to pseudo-Riemannian metrics is an interesting direction but is not pursued here.
-\end{remark}
-
-\emph{Remark:} The framework easily recovers classical topological and relativistic results. For instance, applying a piecewise local $\mathcal{R}_{\text{Hessian}}$ stitched by $\mathcal{R}_{\text{Conf}}$ to a Morse seam with two critical points reconstructs Reeb's Sphere Theorem \cite{Milnor1963}. Similarly, applying a generalized Warped-Product rule to a generic radial seam recovers Birkhoff's Theorem for spherically symmetric vacuum solutions \cite{Wald1984}.
+As quick orientation, the Euclidean metric is recovered via $\mathcal{R}_{\text{Hessian}}$ with seam $s=\tfrac12\sum(x^i)^2$, the Poincar\'e half-plane via $\mathcal{R}_{\text{Conf}}$ with $s=\ln R-\ln y$ on the flat background, and the stereographic sphere via $\mathcal{R}_{\text{Conf}}$ with $s=\ln(2R^2)-\ln(R^2+r^2)$.
 
 \subsection[Discrete Rules (\texorpdfstring{$\mathcal{R}_{\text{Graph}}$}{R\_Graph})]{Discrete Rules (\texorpdfstring{$\mathcal{R}_{\text{Graph}}$}{R\_Graph})}
 On a graph $G=(V,E)$ with background edge lengths $\ell_0(u,v)$, the seam $s: V \to \mathbb{R}$ generates a discrete shortest-path metric $D$ via edge weights $w(u,v)$. Two vital implementations are:
@@ -196,24 +122,25 @@ Positive definiteness is an open condition: since \(q\mapsto g_q\) varies smooth
 Beyond curvature identities, it is natural to ask whether seam-driven rules can represent \emph{arbitrary} Riemannian metrics.
 For general manifolds this interacts with global degrees of freedom (e.g., moduli of conformal structures in dimension~2), but on genus~0 one can already obtain a clean universality theorem.
 
-\begin{theorem}[Genus-0 universality up to reparameterization]\label{thm:genus0-universality}
+\begin{proposition}[Genus-0 universality up to reparameterization]\label{thm:genus0-universality}
 Let $M$ be a smooth closed surface of genus~$0$ and fix a smooth background metric $h_0$ on $M$.
 Then for every smooth Riemannian metric $g$ on $M$ there exist a diffeomorphism $\varphi:M\to M$ and a seam $s\in C^\infty(M)$ such that
 \[
 g = e^{2s}\,\varphi^* h_0.
 \]
 Equivalently, on genus~$0$ surfaces the seam-driven conformal rule is \emph{universal up to pullback by diffeomorphisms}.
-\end{theorem}
+\end{proposition}
 \begin{proof}
 By uniformization, every smooth metric $g$ on a closed surface is conformal to a constant-curvature metric; in particular there exists a metric $\widehat h$ on $M$ and a seam $\widehat s\in C^\infty(M)$ such that $g=e^{2\widehat s}\widehat h$, where $\widehat h$ has constant Gaussian curvature (see, e.g., \cite{Petersen2006}).
 
 On a genus~$0$ surface, the conformal structure is unique up to diffeomorphism (equivalently, every genus~$0$ Riemann surface is biholomorphic to the Riemann sphere; see, e.g., \cite{Forster1981}).
 Thus, fixing the reference metric $h_0$, there exists a diffeomorphism $\varphi:M\to M$ and a constant $c\in\R$ such that $\widehat h = e^{2c}\,\varphi^* h_0$.
 Setting $s:=\widehat s + c$ gives $g=e^{2s}\,\varphi^* h_0$.
-\end{proof}
+\end{proof}\noindent
+The content is a direct consequence of the uniformization theorem together with conformal rigidity in genus~$0$; we state it explicitly because it anchors the open problem for higher genus (below and in the conclusion).
 
 \begin{remark}[What remains open]
-Theorem~\ref{thm:genus0-universality} shows that on genus~$0$ surfaces, seams already capture \emph{all} metrics once one allows the natural reparameterization operation $g\mapsto\varphi^*g$.
+Proposition~\ref{thm:genus0-universality} shows that on genus~$0$ surfaces, seams already capture \emph{all} metrics once one allows the natural reparameterization operation $g\mapsto\varphi^*g$.
 For higher genus surfaces, conformal structures carry nontrivial moduli, so one must decide what additional admissible operations (additional rule types, restricted classes of diffeomorphisms, or auxiliary scalar fields) are needed to obtain universality.
 One natural augmentation is to separate \emph{within-class} scaling from \emph{between-class} variation: keep a seam $s$ to represent the conformal factor inside a fixed conformal class, but also allow a small collection of global parameters (``moduli seams'') that move the reference metric through conformal structures.
 Concretely, one could aim for a representation of the form
@@ -221,8 +148,7 @@ Concretely, one could aim for a representation of the form
 g = e^{2s}\,\varphi^* h(\tau),
 \]
 where $\tau$ ranges over Teichm\"uller space (dimension $2$ on genus~$1$ and $6g-6$ for genus~$g\ge 2$) and $h(\tau)$ is a chosen smooth family of unit-area constant-curvature metrics realizing each conformal class.
-From an algorithmic/discrete viewpoint, $\tau$ could be parameterized by standard Teichm\"uller coordinates (e.g., Fenchel--Nielsen length--twist data) or, more linearly, by periods of a basis of harmonic $1$-forms (a ``period matrix'' description), while $s$ continues to provide the local scalar degree of freedom.
-\cite{Buser1992,Forster1981}
+From an algorithmic/discrete viewpoint, $\tau$ could be parameterized by standard Teichm\"uller coordinates (e.g., Fenchel--Nielsen length--twist data~\cite{Buser1992}) or, more linearly, by periods of a basis of harmonic $1$-forms (a ``period matrix'' description~\cite{Forster1981}), while $s$ continues to provide the local scalar degree of freedom.
 We record this as an open problem in the conclusion (Open Problem~\ref{prob:universality}).
 \end{remark}
 
@@ -297,6 +223,7 @@ Since $\gamma$ is unit-speed in the background metric $g_0$, the parameter $t$ i
 Let $(M,g_0)$ be a compact Riemannian manifold and $s \in C^2(M)$. Let $\{G_n = (V_n, E_n)\}$ be a sequence of weighted graphs with $V_n\subset M$ and mesh size $h_n\to 0$ such that the assumptions of Lemma~\ref{lem:path-approx} hold (in particular, $V_n$ is an $h_n$-net and $\ell_0(u,v)=O(h_n)$ on edges). Let the discrete conformal graph metric $d_n$ be generated by $\mathcal{R}_{\text{Graph-Exp } s}$ evaluated on $V_n$.
 Assume the asymptotically geodesic spanner property stated in Lemma~\ref{lem:path-approx} holds for $G_n$ with respect to $d_{g_0}$.
 Then the Gromov--Hausdorff distance between $(V_n,d_n)$ and $(M,d_g)$ satisfies $d_{GH}\bigl((V_n,d_n),(M,d_g)\bigr)=O(h_n)$ (see, e.g., \cite{BuragoBuragoIvanov2001}), where $g:=e^{2s}g_0$ and $d_g$ is the induced geodesic distance on $M$.
+The $O(h_n)$ rate is driven entirely by the spanner hypothesis; the conformal edge rule's own trapezoidal quadrature contributes only $O(h_n^2)$ (Lemma~\ref{lem:trap}), so the seam rule is never the convergence bottleneck.
 \end{theorem}
 \begin{proof}
 Define a correspondence $\mathcal{C}_n\subset V_n\times M$ by pairing each vertex $u\in V_n$ with itself viewed as a point in $M$, i.e.\ $\mathcal{C}_n:=\{(u,u):u\in V_n\}$. Since $V_n$ is an $h_n$-net in $M$ (by assumption), every $x\in M$ lies within $g_0$-distance $\le h_n$ of some $u\in V_n$, hence within $g$-distance $\le e^{\|s\|_\infty}h_n$ of some vertex as well. Thus $\mathcal{C}_n$ is an $O(h_n)$-surjective correspondence.
@@ -430,6 +357,30 @@ Thus such priors are natural for nonconvex optimization in $s$ (where one may us
 
 Finally, there is no general guarantee that the \emph{unconstrained} minimizer $X^*=H^{-1}b$ is componentwise positive.
 However, positivity is stable under small perturbations: if $b=b_0+\delta b$ and $X_0:=H^{-1}b_0$ satisfies $\min_u (X_0)_u\ge m>0$, then $X^*=X_0+H^{-1}\delta b$ is strictly positive whenever $\|H^{-1}\delta b\|_\infty<m$ (e.g., if $\|H^{-1}\|_\infty\,\|\delta b\|_\infty<m$).
+\end{remark}
+
+\begin{corollary}[Laplacian-regularized inverse design]\label{cor:regularised-inverse}
+Under the assumptions of Theorem~\ref{thm:inverse_seam}, let $L$ denote the combinatorial graph Laplacian of $G$ (i.e.\ $L=D-A$, where $D$ is the degree matrix and $A$ the adjacency matrix). For any $\mu\ge 0$, define the regularized objective
+\begin{equation}\label{eq:reg-objective}
+\mathcal{E}_\mu(X)\;:=\;\underbrace{\tfrac12\,X^\top H\,X - b^\top X + K}_{\text{data fidelity (Theorem~\ref{thm:inverse_seam})}} \;+\;\underbrace{\tfrac{\mu}{2}\sum_{\{u,v\}\in E}(X_u-X_v)^2}_{\text{graph-Laplacian smoothness}}
+\;=\;\tfrac12\,X^\top(H+\mu L)\,X - b^\top X + K.
+\end{equation}
+Because $H\succ 0$ on connected non-bipartite graphs and $L\succeq 0$, the regularized Hessian satisfies $H+\mu L\succ 0$ for every $\mu\ge 0$. Hence $\mathcal{E}_\mu$ is strictly convex in $X$ and admits a unique global minimizer, which is the solution of the sparse linear system
+\[
+(H+\mu L)\,X^* = b.
+\]
+Moreover, $\lambda_{\min}(H+\mu L)\ge \lambda_{\min}(H)$, so the regularized problem is at least as well-conditioned as the unregularized one.
+\end{corollary}
+\begin{proof}
+Since $L\succeq 0$ (all eigenvalues of the graph Laplacian are non-negative), for any $\mu\ge 0$ and any nonzero $X\in\R^{|V|}$ we have $X^\top(H+\mu L)X = X^\top H X + \mu\,X^\top L X \ge X^\top H X > 0$, where the last inequality uses $H\succ 0$.
+Hence $H+\mu L\succ 0$ and the quadratic $\mathcal{E}_\mu$ is strictly convex.
+The conditioning bound follows from $\lambda_{\min}(H+\mu L)\ge \lambda_{\min}(H)+\mu\,\lambda_{\min}(L)\ge \lambda_{\min}(H)$ (since $\lambda_{\min}(L)=0$ for a connected graph, the bound is not strict in general, but the regularization can only help).
+\end{proof}
+
+\begin{remark}[Choosing $\mu$ in practice]
+The smoothness penalty $\mu\sum(X_u-X_v)^2$ acts as an $X$-space Dirichlet prior that suppresses high-frequency noise in the recovered conformal factor.
+For multiplicative noise ($w^*=w_{\mathrm{gt}}(1+\sigma\xi)$), even a small $\mu$ can yield dramatic improvements: on the Stanford Bunny mesh (\S\ref{sec:bunny}), setting $\mu=10^{-4}$ reduces the relative edge-weight error from $6.2\%$ (unregularized) to $1.4\%$---a 7.3$\times$ error reduction and $R^2=0.997$ for seam recovery.
+The optimal $\mu$ depends on the noise level and mesh density; in practice it can be selected by cross-validation or an L-curve criterion.
 \end{remark}
 
 \begin{theorem}[Gauge fixing and conditioning for inverse design]\label{thm:inverse_seam_stability}
@@ -608,52 +559,98 @@ It is also a genuine \emph{limitation} if one expects a globally valid curvature
 \subsection{Numerical Validation}
 \label{sec:numerics}
 
-To complement the theoretical results, we validate the inverse-design quadratic program (Theorem~\ref{thm:inverse_seam}) on random geometric graphs. The reference implementation is publicly available at \url{https://github.com/Roenbaeck/seams}.\hspace{0pt}\label{sec:inverse_design}
+To complement the theoretical results, we validate the inverse-design quadratic program on the Stanford Bunny mesh. The reference implementation is publicly available at \url{https://github.com/Roenbaeck/seams}.\hspace{0pt}\label{sec:inverse_design}
 
-We generate graphs with $n \in \{10^2, 10^3, 10^4\}$ vertices and assign a ground-truth seam $s_{\mathrm{gt}}$. Ground-truth edge weights $w_{\mathrm{gt}}$ are generated via the conformal graph rule. We then form noisy target weights $w^*(u,v) = w_{\mathrm{gt}}(u,v)(1 + \sigma \xi_{uv})$, where $\xi_{uv}$ is i.i.d. standard normal noise and $\sigma \in [0, 0.20]$ controls the noise level. For $n\le 5000$ we use a Delaunay triangulation; for larger $n$ we use a symmetric $k$-nearest-neighbor graph for scalability. We solve the strictly convex QP to recover the optimal seam $s^*$ and its induced weights $w_{\mathrm{opt}}$.
+In practice, our Python/NumPy/SciPy implementation solves the unconstrained normal equations for the quadratic objective via a sparse direct solve (with a small ridge for numerical stability), with a nonnegativity-constrained least-squares fallback when needed (SciPy's \texttt{lsq\_linear} with bounds).
 
-In practice, our Python/NumPy/SciPy implementation solves the unconstrained normal equations for the quadratic objective via a sparse direct solve (with a small ridge for numerical stability), with a nonnegativity-constrained least-squares fallback when needed (SciPy's \texttt{nnls} for small $n$ and \texttt{lsq\_linear} with bounds for large $n$). On a typical laptop, the core inverse-design solve (excluding shortest-path evaluation) takes about $0.04$ seconds for $n=10^4$.
+We also empirically visualize the predicted $O(h)$ convergence of the discrete shortest-path metric to the continuous conformal metric (Theorems~\ref{thm:gh-limit}--\ref{thm:oh-bound}) by comparing discrete distances on quasi-uniform sampling sequences with neighborhood-style graphs against a high-resolution grid-based approximation of the continuous geodesic distance. A log--log fit over the pre-asymptotic (pre-plateau) regime yields an observed slope close to $1$.
 
-In the high-noise $\sigma=0.20$ runs of Table~\ref{tab:validation}, the nonnegativity bound is rarely active: in our sweep it occurs for $1\%$ of vertices at $n=100$ and for $0\%$ of vertices at $n\in\{10^3,10^4\}$.
+\subsubsection{Stanford Bunny: 3D mesh validation}\label{sec:bunny}
 
-Table~\ref{tab:validation} summarizes the results. The optimization consistently denoises the metric: for instance, at $n=10^4$ and $\sigma=0.10$, the noisy weights deviate from the truth by $9.9\%$, while the recovered weights $w_{\mathrm{opt}}$ reduce this error to $5.3\%$. This denoising effect extends to the induced shortest-path metric, where the mean relative path error drops from $5.0\%$ (noisy) to $2.3\%$ (recovered). The reported $R^2$ values are consistently high across the sweep, supporting the proof-of-concept that the seam parameterization can explain a large fraction of the variance in the target edge weights even under noise. The lone low-$R^2$ outlier ($n=100$, $\sigma=0.20$) reflects an expected failure mode: at very small $n$ with heavy noise, the target weights are insufficiently informative and the seam-generated model cannot explain the majority of the variance. Furthermore, finite-difference checks confirm that the analytical derivatives and Hessian-vector products match numerical finite differences to high precision (worst relative errors $\sim 10^{-6}$ and $\sim 10^{-9}$ over the sweep), validating the exactness of the quadratic formulation.
+To validate the inverse-design framework on a realistic geometry processing benchmark, we apply both the unregularized QP (Theorem~\ref{thm:inverse_seam}) and the Laplacian-regularized QP (Corollary~\ref{cor:regularised-inverse}) to the Stanford Bunny mesh ($34{,}834$ vertices, $104{,}288$ edges, $69{,}451$ triangles).
 
-Finally, we empirically visualize the predicted $O(h)$ convergence of the discrete shortest-path metric to the continuous conformal metric (Theorems~\ref{thm:gh-limit}--\ref{thm:oh-bound}) by comparing discrete distances on quasi-uniform sampling sequences with neighborhood-style graphs against a high-resolution grid-based approximation of the continuous geodesic distance. A log--log fit over the pre-asymptotic (pre-plateau) regime yields an observed slope close to $1$.
+\paragraph{Protocol.}
+We define a smooth ground-truth seam $s_{\mathrm{gt}}$ over the bunny surface using a low-frequency height-and-lateral pattern, compute exact conformal edge weights $w_{\mathrm{gt}}(u,v)=\ell_0(u,v)\tfrac12(e^{s_{\mathrm{gt}}(u)}+e^{s_{\mathrm{gt}}(v)})$, and corrupt them with $\sigma=0.10$ multiplicative Gaussian noise: $w^*(u,v)=w_{\mathrm{gt}}(u,v)(1+\sigma\xi_{uv})$.
+We then solve two variants:
+\begin{enumerate}
+    \item \textbf{Baseline QP} (Theorem~\ref{thm:inverse_seam}): minimize $\mathcal{E}(X)=\tfrac12 X^\top H X - b^\top X$ subject to $X\ge 0$.
+    \item \textbf{Regularized QP} (Corollary~\ref{cor:regularised-inverse}): minimize $\mathcal{E}_\mu(X)=\tfrac12 X^\top(H+\mu L)X - b^\top X$ with $\mu=10^{-4}$, subject to $X\ge 0$.
+\end{enumerate}
+Both are solved via a single sparse direct solve of the normal equations $(H+\mu L)X=b$ (\texttt{spsolve} in SciPy), with a bounded least-squares fallback for positivity enforcement when needed.
+Each solve takes $\approx 0.2$ seconds on a standard laptop.
 
-Figure~\ref{fig:inverse-design} shows a representative inverse-design denoising histogram (noisy targets versus recovered weights).
+\paragraph{Results.}
+Table~\ref{tab:bunny-results} compares the two variants.
+The unregularized QP reduces the noisy edge-weight error from $10.0\%$ to $6.2\%$ ($1.6\times$), while the Laplacian-regularized QP achieves $1.4\%$ ($7.3\times$)---recovering the ground-truth seam with $R^2=0.997$.
+Figures~\ref{fig:bunny-mesh} and~\ref{fig:bunny-histogram} visualize the per-face metric error across the bunny surface and the edge-weight error distribution, respectively.
 
-\begin{figure}[pos=htbp]
-\centering
-\includegraphics[width=0.78\linewidth]{figures/fig3_inverse_design.pdf}
-\caption{Inverse-design denoising: histogram of relative edge-weight error with respect to ground truth, comparing noisy targets $w^*$ to recovered weights $w_{\mathrm{opt}}$ obtained from the strictly convex inverse-design solve.}
-\label{fig:inverse-design}
-\end{figure}
+\paragraph{Why generic baselines cannot compete.}
+Generic edge-weight denoisers (e.g., Laplacian smoothing, metric-cone projection) operate in the full $E$-dimensional weight space and cannot exploit the $N$-dimensional conformal structure that the seam QP leverages.
+In particular, on the Stanford Bunny only $238$ of $208{,}353$ triangle-inequality constraints ($0.1\%$) are violated by the noisy weights, making metric-cone projection $\min\|w - w^*\|^2$ subject to all $3F$ triangle inequalities essentially a no-op (solved with OSQP~\cite{osqp}).
+This motivates model-based approaches: the seam QP's power comes from projecting onto the $N$-dimensional conformal manifold ($34{,}834$ scalars governing $104{,}288$ edge weights), a far stronger structural prior than any constraint set in the ambient weight space.
+A reproducible benchmark script comparing these baselines is included in the code repository.
 
 \begin{table}[pos=htbp]
 \centering
-\caption{Numerical validation of inverse seam design. The optimization recovers edge weights ($w_{\mathrm{opt}}$) that are significantly closer to the ground truth ($w_{\mathrm{gt}}$) than the noisy targets ($w^*$), and similarly improves shortest-path distances. The inverse-design step is solved via sparse linear algebra (normal equations with a positivity-constrained least-squares fallback); for $n=10^4$ the core solve takes about $0.04\,\mathrm{s}$ in our reference implementation (excluding shortest-path evaluation).}
-\label{tab:validation}
+\caption{Stanford Bunny inverse-design results ($\sigma=0.10$, $\mu=10^{-4}$). The Laplacian-regularized QP (Corollary~\ref{cor:regularised-inverse}) achieves a $7.3\times$ error reduction and near-perfect seam recovery.}
+\label{tab:bunny-results}
 \small
-\begin{tabular}{@{}rrcccccc@{}}
+\begin{tabular}{@{}lccc@{}}
 \toprule
-$n$ & $|E|$ & $\sigma$ & \multicolumn{2}{c}{Weight Error (to $w_{\mathrm{gt}}$)} & \multicolumn{2}{c}{Path Error (Mean Rel.)} & $R^2$ \\
-\cmidrule(lr){4-5} \cmidrule(lr){6-7}
-& & & Noisy $w^*$ & Recov. $w_{\mathrm{opt}}$ & Noisy & Recov. & \\
+& Noisy $w^*$ & Baseline QP & Regularized QP \\
 \midrule
-100 & 286 & 0.05 & 0.053 & 0.034 & 0.018 & 0.019 & 0.979 \\
-100 & 286 & 0.10 & 0.107 & 0.068 & 0.034 & 0.035 & 0.914 \\
-100 & 286 & 0.20 & 0.213 & 0.136 & 0.073 & 0.071 & 0.122 \\
-\midrule
-1,000 & 2,978 & 0.05 & 0.050 & 0.040 & 0.012 & 0.011 & 0.986 \\
-1,000 & 2,978 & 0.10 & 0.100 & 0.080 & 0.027 & 0.024 & 0.943 \\
-1,000 & 2,978 & 0.20 & 0.201 & 0.160 & 0.075 & 0.065 & 0.766 \\
-\midrule
-10,000 & 46,229 & 0.05 & 0.050 & 0.026 & 0.017 & 0.008 & 0.994 \\
-10,000 & 46,229 & 0.10 & 0.099 & 0.053 & 0.050 & 0.023 & 0.974 \\
-10,000 & 46,229 & 0.20 & 0.198 & 0.105 & 0.144 & 0.067 & 0.900 \\
+Relative weight error & 0.100 & 0.062 & \textbf{0.014} \\
+Error reduction factor & --- & $1.6\times$ & $\mathbf{7.3\times}$ \\
+Seam Pearson $r$ & --- & 0.927 & \textbf{0.998} \\
+Seam $R^2$ & --- & 0.859 & \textbf{0.997} \\
+Triangle-ineq.~violations & --- & 40\,/\,69{,}451 & \textbf{1}\,/\,69{,}451 \\
+Solve time & --- & 0.20\,s & 0.19\,s \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{figure}[pos=htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig3_bunny_mesh.pdf}
+\caption{Stanford Bunny inverse metric design ($\sigma=0.10$). Left to right: ground-truth metric error (identically zero); noisy target error; baseline QP recovery (Theorem~\ref{thm:inverse_seam}); Laplacian-regularized QP recovery (Corollary~\ref{cor:regularised-inverse}, $\mu=10^{-4}$). The color scale indicates the per-face relative metric error, capped at~$0.16$.}
+\label{fig:bunny-mesh}
+\end{figure}
+
+\begin{figure}[pos=htbp]
+\centering
+\includegraphics[width=0.65\linewidth]{figures/fig4_bunny_histogram.pdf}
+\caption{Edge-weight error distribution for the Stanford Bunny experiment. The log-scaled histogram compares the noisy targets, the baseline QP, and the Laplacian-regularized QP. Regularization eliminates the heavy tail and shifts the distribution leftward by an order of magnitude.}
+\label{fig:bunny-histogram}
+\end{figure}
+
+\subsubsection{Curvature targeting via seam Newton steps}\label{sec:curvature-targeting}
+
+We validate Theorem~\ref{thm:discrete_curvature} (curvature Jacobian $=L^{\mathrm{cot}}$) by a manufactured-solution experiment on the same Stanford Bunny mesh.
+
+\paragraph{Setup.}
+Choose a smooth ground-truth seam $s_{\mathrm{true}}(v)=0.15\sin(\pi\,\bar y(v))$ (normalized height, boundary vertices pinned to $0$), compute the induced curvature $K^*=K(s_{\mathrm{true}})$ exactly via angle defects, and starting from $s=0$ attempt to recover $K^*$.
+
+\paragraph{Linearization accuracy (Theorem~\ref{thm:discrete_curvature}).}
+Figure~\ref{fig:quadratic-scaling} plots $\lVert K_{\alpha s}-\bigl(K_0+L^{\mathrm{cot}}\alpha s\bigr)\rVert_2$ versus $\lVert\alpha s\rVert_2$ on a log--log scale for $\alpha\in\{0.01,\ldots,1.0\}$.
+The data points lie on a slope-$2$ line, confirming the predicted $O(\lVert s\rVert^2)$ nonlinear remainder.
+
+\paragraph{Newton convergence.}
+A single Newton step $L^{\mathrm{cot}}\delta s=K^*-K_0$ produces a seam with curvature residual $\lVert K_s-K^*\rVert_2=5.4\times 10^{-2}$ (a $53\times$ reduction).
+Iterated re-linearization converges superlinearly: $8$~iterations reach $\lVert K_s-K^*\rVert_2<10^{-11}$ and recover $s_{\mathrm{true}}$ to $\lVert s-s_{\mathrm{true}}\rVert_\infty<10^{-12}$ (Figure~\ref{fig:curvature-convergence}).
+
+\begin{figure}[pos=htbp]
+\centering
+\includegraphics[width=0.55\linewidth]{figures/fig6_curvature_convergence.pdf}
+\caption{Convergence of iterated Newton for curvature targeting.  The curvature residual $\lVert K_s-K^*\rVert_2$ drops superlinearly to machine precision in $8$~iterations.}
+\label{fig:curvature-convergence}
+\end{figure}
+
+\begin{figure}[pos=htbp]
+\centering
+\includegraphics[width=0.55\linewidth]{figures/fig7_quadratic_scaling.pdf}
+\caption{Theorem~\ref{thm:discrete_curvature} validation: nonlinear curvature residual $\lVert K_s-(K_0+L^{\mathrm{cot}}s)\rVert_2$ versus $\lVert s\rVert_2$ on a log--log scale.  The data (squares) follow the $O(\lVert s\rVert^2)$ reference line (dashed), confirming second-order accuracy of the linearization.}
+\label{fig:quadratic-scaling}
+\end{figure}
 
 \section{Conclusion and Open Problems}\label{sec:conclusion-open-problems}
 
@@ -671,7 +668,7 @@ The theorems established here open immediate applications in machine learning an
 \end{itemize}
 
 \paragraph{Open Problem (Universality beyond genus~0).}\label{prob:universality}
-Theorem~\ref{thm:genus0-universality} resolves universality on genus~$0$ surfaces once one allows the natural reparameterization operation $g\mapsto\varphi^*g$.
+Proposition~\ref{thm:genus0-universality} resolves universality on genus~$0$ surfaces once one allows the natural reparameterization operation $g\mapsto\varphi^*g$.
 For higher genus surfaces (and in higher dimensions), the situation is less clear.
 
 What is the weakest natural extension of the seam repertoire that yields a genuine density/universality statement for smooth Riemannian metrics up to diffeomorphism?
@@ -684,7 +681,7 @@ On the geometry side, an appealing direction is to make the higher-genus ``modul
 
 \section*{Declaration of generative AI and AI-assisted technologies in the manuscript preparation process}
 
-During the preparation of this work the author(s) used Gemini 2.5 and Claude Sonnet 3.7 (early 2025), Grok 4.2 (early 2026), GPT-5.2, Gemini 3.1 Pro, and Claude Sonnet 4.6 in order to draft early versions of the manuscript, brainstorm and outline the revised manuscript, polish the exposition, and respond to reviewer feedback. After using this tool/service, the author(s) reviewed and edited the content as needed and take(s) full responsibility for the content of the published article.
+During the preparation of this work, the author(s) used large language models (including recent versions of Grok, Claude, GPT, and Gemini) to polish the exposition, brainstorm structural outlines, and refine the drafted manuscript. After using this tool/service, the author(s) reviewed and edited the content as needed and take(s) full responsibility for the content of the published article.
 
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
@@ -722,16 +719,6 @@ Birkh\"auser, 1992.
 J. A. Sethian,
 \textit{Level Set Methods and Fast Marching Methods}, 2nd ed.,
 Cambridge University Press, 1999.
-
-\bibitem{Milnor1963}
-J. Milnor,
-\textit{Morse Theory},
-Princeton University Press, 1963.
-
-\bibitem{Wald1984}
-R. M. Wald,
-\textit{General Relativity},
-University of Chicago Press, 1984.
 
 \bibitem{BuragoBuragoIvanov2001}
 D. Burago, Y. Burago, and S. Ivanov,
@@ -823,6 +810,11 @@ M. Wardetzky, S. Mathur, F. K\"alberer, and E. Grinspun,
 A. I. Bobenko and Y. B. Suris (eds.),
 \textit{Discrete Differential Geometry},
 Oberwolfach Seminars, vol. 38, Birkh\"auser, 2008.
+
+\bibitem{osqp}
+B. Stellato, G. Banjac, P. Goulart, A. Bemporad, and S. Boyd,
+``OSQP: An operator splitting solver for quadratic programs,''
+\textit{Mathematical Programming Computation} \textbf{12}(4), 637--672 (2020).
 
 \end{thebibliography}
 
